@@ -2,6 +2,11 @@ import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
+/* Created 16.09.2025
+
+1. Открыть подраздел "Специальные API"
+- Отображается список специальных API */
+
 test('9.1. Специальные API', async ({ page, loginPage, commonPage }) => {
   await test.step('Авторизуемся', async () => {
     loginPage.goToAuthorizedPage('/login', getMainUser());

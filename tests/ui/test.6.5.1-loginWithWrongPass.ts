@@ -7,7 +7,7 @@ import { expect } from '@playwright/test';
   1. В поле "Логин" ввести логин существующего пользователя
   - Поле ввода активно, данные введены
   2. В поле "Пароль" ввести неверный пароль для этого пользователя
-  - Поле заполнено. Введенные данные скрыты:
+  - Поле заполнено. Введенные данные скрыты
   3. Нажать "Войти"
   - Отображается ошибка "Неправильный логин или пароль" */
 
@@ -16,7 +16,14 @@ test('6.5.1. Авторизация существующего пользова�
     await page.goto('/login');
     await loginPage.authorization({ username: getMainUser().username, password: 'boba' });
 
-    await test.step('Проверяем отображение данных', async () => {});
+    await test.step('Проверяем отображение пароля', async () => {
+      // type="password" всегда в браузере визуально скрывает пароль
+      expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('password');
+      await loginPage.loginForm.showPasswordBtn.click();
+      expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('text');
+      await loginPage.loginForm.hidePasswordBtn.click();
+      expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('password');
+    });
 
     await expect(loginPage.loginForm.loader).toBeHidden();
   });
