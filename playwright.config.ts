@@ -22,55 +22,12 @@ export default defineConfig({
   },
 
   projects: [
-    // 1.31.* section
     // Глобальная UI авторизация
-    { name: 'Setup UI Data 31', testMatch: '**/smokeDev31/ui/setup/setup.*.ts', teardown: 'Remove UI Data 31' },
-    // UI тесты
-    {
-      name: 'Smoke 1.31',
-      testMatch: '**/smokeDev31/ui/@(spec|test).*.?(c|m)[jt]s?(x)',
-      dependencies: ['Setup UI Data 31'],
-      use: {
-        // storageState: '.temp/mainSession.json',
-      },
-    },
-    // Удаление данных после UI тестов
-    {
-      name: 'Remove UI Data 31',
-      testMatch: '**/smokeDev31/ui/setup/teardown.deleteTestData.ts',
-    },
-    // Глобальная API авторизация
-    {
-      name: 'Setup API Data 31',
-      testMatch: '**/smokeDev31/api/setup/setup.getToken.ts',
-      teardown: 'Remove API Data 31',
-    },
-    // API скрипты
-    {
-      name: 'API Scripts 31',
-      timeout: 200000000,
-      testMatch: '**/smokeDev31/api/@(suite|test).*.?(c|m)[jt]s?(x)',
-      dependencies: ['Setup API Data 31'],
-      use: {
-        extraHTTPHeaders: {
-          authorization: process.env.BI_TOKEN || '',
-          'content-type': 'application/json',
-        },
-      },
-    },
-    // Удаление данных после тестов
-    {
-      name: 'Remove API Data 31',
-      testMatch: '**/smokeDev31/api/setup/teardown.deleteTestData.ts',
-    },
-
-       // 1.32.* section
-    // Глобальная UI авторизация
-    { name: 'Setup UI Data 32', testMatch: '**/smokeDev32/ui/setup/setup.*.ts', teardown: 'Remove UI Data 32' },
+    { name: 'Setup UI Data 32', testMatch: '**/ui/setup/setup.*.ts', teardown: 'Remove UI Data 32' },
     // UI тесты
     {
       name: 'Smoke 1.32',
-      testMatch: '**/smokeDev32/ui/@(spec|test).*.?(c|m)[jt]s?(x)',
+      testMatch: '**/ui/@(spec|test).*.?(c|m)[jt]s?(x)',
       dependencies: ['Setup UI Data 32'],
       use: {
         // storageState: '.temp/mainSession.json',
@@ -79,19 +36,19 @@ export default defineConfig({
     // Удаление данных после UI тестов
     {
       name: 'Remove UI Data 32',
-      testMatch: '**/smokeDev32/ui/setup/teardown.deleteTestData.ts',
+      testMatch: '**/ui/setup/teardown.deleteTestData.ts',
     },
     // Глобальная API авторизация
     {
       name: 'Setup API Data 32',
-      testMatch: '**/smokeDev32/api/setup/setup.getToken.ts',
+      testMatch: '**/api/setup/setup.getToken.ts',
       teardown: 'Remove API Data 32',
     },
     // API скрипты
     {
       name: 'API Scripts 32',
       timeout: 200000000,
-      testMatch: '**/smokeDev32/api/@(suite|test).*.?(c|m)[jt]s?(x)',
+      testMatch: '**/api/@(suite|test).*.?(c|m)[jt]s?(x)',
       dependencies: ['Setup API Data 32'],
       use: {
         extraHTTPHeaders: {
@@ -103,7 +60,7 @@ export default defineConfig({
     // Удаление данных после тестов
     {
       name: 'Remove API Data 32',
-      testMatch: '**/smokeDev32/api/setup/teardown.deleteTestData.ts',
+      testMatch: '**/api/setup/teardown.deleteTestData.ts',
     },
   ],
 });
