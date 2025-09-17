@@ -14,6 +14,7 @@ import LicenseRulesPage from '../pages/adminPages/page.licenseRules';
 import LicensiesPage from '../pages/adminPages/page.licensies';
 import LoginPage from '../pages/page.login';
 import LogsPage from '../pages/adminPages/page.logs';
+import MainPage from '../pages/page.main';
 import ModifiersAuditPage from '../pages/adminPages/page.modifiersAudit';
 import RlsOmitPage from '../pages/adminPages/page.rlsOmit';
 import SecurityRulesPage from '../pages/adminPages/page.securityRules';
@@ -40,6 +41,7 @@ type Fixtures = {
   licensiesPage: LicensiesPage;
   loginPage: LoginPage;
   logsPage: LogsPage;
+  mainPage: MainPage;
   modifiersAuditPage: ModifiersAuditPage;
   rlsOmitPage: RlsOmitPage;
   securityRulesPage: SecurityRulesPage;
@@ -95,6 +97,9 @@ export const test = base.extend<Fixtures>({
   },
   logsPage: async ({ page }, use) => {
     await use(new LogsPage(page));
+  },
+  mainPage: async ({ page }, use) => {
+    await use(new MainPage(page));
   },
   modifiersAuditPage: async ({ page }, use) => {
     await use(new ModifiersAuditPage(page));
