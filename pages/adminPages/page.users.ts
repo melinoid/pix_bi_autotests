@@ -8,8 +8,6 @@ export default class UsersPage {
   readonly createUserBtn: Locator;
   readonly table: Components.Table;
 
-  readonly deleteModal: Components.DeleteModal;
-
   readonly newUserPage: {
     readonly pageTitle: Locator;
     readonly usernameField: Components.InputField;
@@ -28,18 +26,10 @@ export default class UsersPage {
     this.page = page;
 
     this.pageTitle = page.locator(':above(.ant-table-wrapper) h2');
-    this.createUserBtn = page.getByTestId('users-page-add-user-button');
+    this.createUserBtn = page.locator(':above(.ant-table-container):right-of([aria-label=setting])button').first();
     this.table = {
       head: page.locator('.ant-table-thead tr'),
       body: page.locator('.ant-table-body'),
-    };
-
-    this.deleteModal = {
-      title: page.locator('.ant-modal-content .ant-modal-header .ant-modal-title'),
-      closeBtn: page.locator('.ant-modal-content button.ant-modal-close'),
-      text: page.locator('.ant-modal-content .ant-modal-body h5'),
-      cancelBtn: page.locator('.ant-modal-content .ant-modal-footer button.ant-btn-default'),
-      applyBtn: page.locator('.ant-modal-content .ant-modal-footer button.ant-btn-primary'),
     };
 
     this.newUserPage = {

@@ -45,6 +45,8 @@ export default class CommonPage {
 
   readonly searchField: Components.SearchField;
 
+  readonly deleteModal: Components.DeleteModal;
+
   readonly mainLoader: Locator;
   readonly contentLoader: Locator;
 
@@ -95,6 +97,14 @@ export default class CommonPage {
       openBtn: page.locator('//button[contains(@class, "SearchUpdateButtons_search")]'),
       input: page.locator('//div[contains(@class, "SearchUpdateButtons")]').locator('input'),
       closeBtn: page.locator('//div[contains(@class, "SearchUpdateButtons")]').locator('button'),
+    };
+
+    this.deleteModal = {
+      title: page.locator('.ant-modal-content .ant-modal-header .ant-modal-title'),
+      closeBtn: page.locator('.ant-modal-content button.ant-modal-close'),
+      text: page.locator('.ant-modal-content .ant-modal-body h5'),
+      cancelBtn: page.locator('.ant-modal-content .ant-modal-footer button.ant-btn-default'),
+      applyBtn: page.locator('.ant-modal-content .ant-modal-footer button.ant-btn-primary'),
     };
 
     this.mainLoader = page.locator("//div[contains(@class, 'Loader_loadingIndicator')]");

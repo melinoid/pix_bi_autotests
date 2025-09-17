@@ -63,7 +63,7 @@ test.describe('Действия с пользователем', async () => {
     });
     await test.step('Создаём пользователя', async () => {
       await usersPage.newUserPage.createBtn.click();
-      userCreationDate = dayjs(); // Временем создания является время отправи запроса
+      userCreationDate = dayjs(); // Временем создания является время отправки запроса
       await expect(usersPage.newUserPage.actionAlert).toBeInViewport({ timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(usersPage.table.head).toBeVisible();
@@ -72,7 +72,6 @@ test.describe('Действия с пользователем', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(data.user_uno.username);
-      await page.waitForTimeout(2000);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -135,6 +134,7 @@ test.describe('Действия с пользователем', async () => {
           .last()
           .fill(userGuid + '');
         await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
         await expect(commonPage.contentLoader).toBeHidden();
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -215,7 +215,6 @@ test.describe('Действия с пользователем', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(data.user_uno.username);
-      await page.waitForTimeout(2000);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -223,7 +222,7 @@ test.describe('Действия с пользователем', async () => {
     });
     await test.step('Удаляем пользователя', async () => {
       await page.locator('tr.ant-table-row').nth(0).locator('td').last().locator('[data-testid*=delete]').click();
-      await usersPage.deleteModal.applyBtn.click();
+      await commonPage.deleteModal.applyBtn.click();
       userDeletionDate = dayjs();
       await expect(commonPage.contentLoader).toBeHidden();
     });
@@ -249,6 +248,7 @@ test.describe('Действия с пользователем', async () => {
           .last()
           .fill(userGuid + '');
         await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
         await expect(commonPage.contentLoader).toBeHidden();
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);

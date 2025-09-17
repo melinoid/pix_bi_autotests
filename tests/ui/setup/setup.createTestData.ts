@@ -1,7 +1,10 @@
+import { test as setup } from '../../../utils/fixtures';
 import { writeData } from '../../../data/data.common';
 import UsersTD from '../../../data/data.users';
-import { test as setup } from '../../../utils/fixtures';
+import GroupsTD from '../../../data/data.groups';
 
 setup('Генирируем тестовые данные', async () => {
   writeData('user_uno', await UsersTD.createUser());
+
+  writeData('group_uno', await GroupsTD.createGroup());
 });
