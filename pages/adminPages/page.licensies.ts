@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Лицензирование`. */
 export default class LicensiesPage {
   readonly page: Page;
 

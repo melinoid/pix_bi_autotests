@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `RLS и OMIT`. */
 export default class RlsOmitPage {
   readonly page: Page;
 

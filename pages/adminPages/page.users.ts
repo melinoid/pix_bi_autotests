@@ -1,6 +1,7 @@
 import { Locator, type Page } from '@playwright/test';
 import { Components } from '../components';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Пользователи`. */
 export default class UsersPage {
   readonly page: Page;
 
@@ -36,15 +37,15 @@ export default class UsersPage {
       pageTitle: page.locator(':above(form[id=user_create])h2'),
       usernameField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(0),
-        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input').nth(0),
+        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input[type=text]').nth(0),
       },
       displayedNameField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(1),
-        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input').nth(1),
+        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input[type=text]').nth(1),
       },
       emailField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(2),
-        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input').nth(2),
+        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input[type=text]').nth(2),
       },
       passwordField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(3),

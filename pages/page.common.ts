@@ -1,6 +1,7 @@
 import { Locator, type Page } from '@playwright/test';
 import { Components } from './components';
 
+/** Общие локаторы и функции. */
 export default class CommonPage {
   readonly page: Page;
 
@@ -110,4 +111,36 @@ export default class CommonPage {
     this.mainLoader = page.locator("//div[contains(@class, 'Loader_loadingIndicator')]");
     this.contentLoader = page.locator('.ant-spin-spinning');
   }
+
+  /**
+   * Заполнение фильтра пользователей.
+   * @param filter фильтр в формате [[строка фильтра], [и/или], [строка фильтра]] .
+   */
+  async fillUserFilter(filter: string[][]) {
+
+  }
 }
+
+export const userFilterMapping = {
+  type: {
+    Id: 'Идентификатор',
+    UserName: 'Имя пользователя',
+    Email: 'E-mail',
+    ModifiedBy: 'Кем изменён',
+    LicenseType: 'Тип лицензии',
+    UserGroupId: 'Группы пользователя',
+    UserGroupName: 'Название группы пользователя',
+  },
+  filter: {
+    like: 'Содержит',
+    notlike: 'Не содержит',
+    starts: 'Начинается с',
+    notstarts: 'Не начинается с',
+    ends: 'Заканчивается на',
+    notends: 'Не заканчивается на',
+    in: 'Является',
+    notin: 'Не является',
+    isnull: 'Является пустым',
+    notnull: 'Не является пустым',
+  },
+};

@@ -44,7 +44,7 @@ export interface LDAP {
   metadata?: MetaData;
 }
 
-export interface Groups {
+export interface Group {
   name: string;
   description?: string;
   type?: 'local' | 'ldap';
@@ -58,10 +58,10 @@ export interface User {
   first_login_reset_password?: boolean;
   displayed_name?: string;
   email?: string;
-  license_type?: 'pro' | 'nfr' | 'base';
+  license_type?: 'Pro' | 'NFR' | 'Base';
   ad_imported?: boolean;
-  groups?: Groups[];
-  ad_groups?: Groups[];
+  groups?: Group[];
+  ad_groups?: Group[];
   active?: boolean;
   ad_user_id?: string;
   bi_user_id?: string;
@@ -69,4 +69,14 @@ export interface User {
   metadata?: MetaData & {
     last_login_date: Date;
   };
+}
+
+export interface LicenseRule {
+  name: string;
+  description?: string;
+  enabled: boolean;
+  new_user_apply?: boolean;
+  license_type: 'Pro' | 'Base';
+  user_filter: string[][];
+  metadata?: MetaData;
 }

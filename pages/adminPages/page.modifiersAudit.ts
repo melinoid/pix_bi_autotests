@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Аудит доступов`. */
 export default class ModifiersAuditPage {
   readonly page: Page;
 

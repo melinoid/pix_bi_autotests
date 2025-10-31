@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Импорт пользователей`. */
 export default class UsersImportPage {
   readonly page: Page;
 

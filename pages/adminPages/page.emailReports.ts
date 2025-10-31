@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Рассылка`. */
 export default class EmailReportsPage {
   readonly page: Page;
 

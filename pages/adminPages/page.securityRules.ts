@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Правила доступа`. */
 export default class SecurityRulesPage {
   readonly page: Page;
 

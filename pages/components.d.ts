@@ -6,6 +6,11 @@ declare namespace Components {
     readonly input: Locator;
   };
 
+  type TextareaField = {
+    readonly label: Locator;
+    readonly textarea: Locator;
+  };
+
   type SelectorField = InputField & {
     readonly dropdown: Locator;
   };

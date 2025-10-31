@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Полезное`. */
 export default class UsefulLinksPage {
   readonly page: Page;
 

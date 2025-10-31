@@ -1,6 +1,7 @@
 import { Locator, type Page } from '@playwright/test';
 import { Components } from '../components';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Группы`. */
 export default class GroupsPage {
   readonly page: Page;
 
@@ -32,14 +33,14 @@ export default class GroupsPage {
       pageTitle: page.locator(':above(form[id=user_create])h2'),
       nameField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(0),
-        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input').nth(0),
+        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input[type=text]').nth(0),
       },
       descriptionField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(1),
-        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input').nth(1),
+        input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row input[type=text]').nth(1),
       },
       actionAlert: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .show-status').getByRole('alert'),
-      createBtn: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row').last().getByRole('button'),
+      createBtn: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row button'),
     };
   }
 }

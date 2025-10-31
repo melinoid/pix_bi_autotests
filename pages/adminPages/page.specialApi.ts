@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Специальные API`. */
 export default class SharedLinksPage {
   readonly page: Page;
 

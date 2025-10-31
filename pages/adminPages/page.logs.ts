@@ -1,6 +1,7 @@
 import { Locator, type Page } from '@playwright/test';
 import { Components } from '../components';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Журнал событий`. */
 export default class LogsPage {
   readonly page: Page;
 

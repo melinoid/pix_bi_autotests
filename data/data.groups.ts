@@ -1,14 +1,14 @@
 import Helper from '../utils/helper';
-import { Groups } from './data';
+import { Group } from './data';
 
 /** Всё связанное с тестовыми данными групп. */
 export default class GroupsTD {
   /**
-   * Генерация Группы.
+   * Генерация группы.
    * @returns объект с данными группы.
    */
   static async createGroup() {
-    let group = <Groups>{};
+    let group = <Group>{};
     const groupUid = Helper.genUid();
 
     group.name = 'test_group_' + groupUid;

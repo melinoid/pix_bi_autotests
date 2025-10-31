@@ -1,5 +1,6 @@
 import { Locator, type Page } from '@playwright/test';
 
+/** Локаторы и функции для раздела `Администрирование` –> `Директории`. */
 export default class DirectoriesPage {
   readonly page: Page;
 

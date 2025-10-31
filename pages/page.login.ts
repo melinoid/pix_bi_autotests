@@ -1,6 +1,7 @@
 import { type Page, type Locator, expect } from '@playwright/test';
 import CommonPage from './page.common';
 
+/** Локаторы и функции для стр. авторизации. */
 export default class LoginPage {
   readonly page: Page;
   readonly commonPage: CommonPage;
