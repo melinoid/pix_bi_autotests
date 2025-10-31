@@ -51,13 +51,13 @@ test.describe('Действия с группами', async () => {
       await groupsPage.createGroupBtn.click();
     });
     await test.step('Заполняем форму группы', async () => {
-      await groupsPage.newGroupPage.nameField.input.fill(data.group_uno.name);
-      await groupsPage.newGroupPage.descriptionField.input.fill(data.group_uno.description);
+      await groupsPage.groupPage.nameField.input.fill(data.group_uno.name);
+      await groupsPage.groupPage.descriptionField.input.fill(data.group_uno.description);
     });
     await test.step('Создаём группу', async () => {
-      await groupsPage.newGroupPage.createBtn.click();
+      await groupsPage.groupPage.createBtn.click();
       groupCreationDate = dayjs(); // Временем создания является время отправки запроса
-      await expect(groupsPage.newGroupPage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await expect(groupsPage.groupPage.actionAlert).toBeInViewport({ timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(groupsPage.table.head).toBeVisible();
     });
@@ -69,7 +69,7 @@ test.describe('Действия с группами', async () => {
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
     });
-    await test.step('Проверяем созданного пользователя', async () => {
+    await test.step('Проверяем созданную группу', async () => {
       const groupRow = groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
       // Название
       await expect(groupRow.nth(0)).toHaveText(data.group_uno.name);
@@ -96,7 +96,7 @@ test.describe('Действия с группами', async () => {
         await logsPage.tabs.informationSecurityLogs.click();
         await expect(commonPage.contentLoader).toBeHidden();
       });
-      await test.step('Ищем событие создания пользователя', async () => {
+      await test.step('Ищем событие создания группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group created (local)' }).click();
         // TODO: не работает поиск по объекту операции, ищем по адресу объекта
@@ -111,7 +111,7 @@ test.describe('Действия с группами', async () => {
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
-      await test.step('Проверяем лог создания пользователя', async () => {
+      await test.step('Проверяем лог создания группы', async () => {
         const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
         // Событие
         await expect(logRow.nth(0)).toHaveText('GroupCreated');
@@ -148,7 +148,7 @@ test.describe('Действия с группами', async () => {
 
   /* Create: 17.09.2025
 
-  1.Открыть подраздел “Группы”
+  1. Открыть подраздел “Группы”
   - Подраздел открыт
   2. Проскроллить список вправо (ctrl+скролл вниз)
   - Список проскроллен
@@ -243,7 +243,7 @@ test.describe('Действия с группами', async () => {
         await expect(logRow.nth(7)).toHaveText('UserGroup');
         // Oбъект операции
         await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${data.group_uno.name}`);
-        await expect(logRow.nth(8).locator('ul li a[href*="/admin/groups/edit/"]')).toHaveText(data.group_uno.name);
+        await expect(logRow.nth(8).locator(`ul li a[href="/admin/groups/edit/${groupId}"]`)).toHaveText(data.group_uno.name);
         // Адрес объекта операции
         await expect(logRow.nth(9)).toHaveText(groupId + '');
         // Субъект операции

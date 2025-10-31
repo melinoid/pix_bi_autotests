@@ -1,4 +1,4 @@
-import { Locator, type Page } from '@playwright/test';
+import { Locator, type Page, expect } from '@playwright/test';
 import { Components } from './components';
 
 /** Общие локаторы и функции. */
@@ -114,10 +114,77 @@ export default class CommonPage {
 
   /**
    * Заполнение фильтра пользователей.
-   * @param filter фильтр в формате [[строка фильтра], [и/или], [строка фильтра]] .
+   * @param filter фильтр в формате [[строка фильтра], [and/or], [строка фильтра]...] .
    */
   async fillUserFilter(filter: string[][]) {
-
+    if (filter.length == 0) throw Error('Фильтр пользователей отсутствует');
+    this.page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row button').click();
+    for (let i in filter) {
+      const row = +i;
+      if (filter[row].length > 1) {
+        // Выбор сущности
+        await this.page
+          .locator(':right-of(.ant-layout-sider-light):below(h2)form div[class*=Filter][class*=wrapper] .ant-row')
+          .nth(row)
+          .locator('input')
+          .nth(0)
+          .click();
+        await this.page
+          .locator(
+            `:right-of(.ant-layout-sider-light):below(h2) .rc-virtual-list-holder-inner :text-is("${userFilterMapping.type[filter[row][0] as keyof typeof userFilterMapping.type]}")`
+          )
+          .click();
+        // Выбор сравнения
+        await this.page
+          .locator(':right-of(.ant-layout-sider-light):below(h2)form div[class*=Filter][class*=wrapper] .ant-row')
+          .nth(row)
+          .locator('input')
+          .nth(1)
+          .click();
+        await this.page
+          .locator(
+            `:right-of(.ant-layout-sider-light):below(h2) .rc-virtual-list-holder-inner :text-is("${userFilterMapping.filter[filter[row][1] as keyof typeof userFilterMapping.filter]}")`
+          )
+          .click();
+        // Заполнение фильтра
+        if (filter[row][2]) {
+          if (!['in', 'notin', 'isnull', 'notnull'].includes(filter[row][1])) {
+            await this.page
+              .locator(':right-of(.ant-layout-sider-light):below(h2)form div[class*=Filter][class*=wrapper] .ant-row')
+              .nth(row)
+              .locator('input')
+              .nth(2)
+              .fill(filter[row][2]);
+          } else if (['in', 'notin'].includes(filter[row][1])) {
+            await this.page
+              .locator(':right-of(.ant-layout-sider-light):below(h2)form div[class*=Filter][class*=wrapper] .ant-row')
+              .nth(row)
+              .locator('input')
+              .nth(2)
+              .click();
+            await this.page
+              .locator(':right-of(.ant-layout-sider-light):below(h2)form div[class*=Filter][class*=wrapper] .ant-row')
+              .nth(row)
+              .locator('input')
+              .nth(2)
+              .fill(filter[row][2]);
+            await this.page
+              .locator(
+                `:right-of(.ant-layout-sider-light):below(h2) .rc-virtual-list-holder-inner :text-is("${filter[row][2]}")`
+              )
+              .click();
+          }
+        }
+      } else {
+        // Выбор соединения фильтров
+        this.page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row button').click();
+        await this.page
+          .locator(':right-of(.ant-layout-sider-light):below(h2)form div[class*=Filter][class*=wrapper] .ant-row')
+          .nth(row)
+          .locator(`:text-is("${userFilterMapping.join[filter[row][0] as keyof typeof userFilterMapping.join]}")`)
+          .click();
+      }
+    }
   }
 }
 
@@ -142,5 +209,9 @@ export const userFilterMapping = {
     notin: 'Не является',
     isnull: 'Является пустым',
     notnull: 'Не является пустым',
+  },
+  join: {
+    and: 'И',
+    or: 'ИЛИ',
   },
 };

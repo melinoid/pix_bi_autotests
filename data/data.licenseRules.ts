@@ -13,10 +13,10 @@ export default class LicenseRulesTD {
 
     licenseRule.name = 'test_license_rule_' + licenseRuleUid;
     licenseRule.description = 'Test License Rule ' + licenseRuleUid;
-    licenseRule.enabled = true;
-    licenseRule.new_user_apply = true;
-    licenseRule.license_type = 'Pro';
-    licenseRule.user_filter = [['UserName', 'in', 'admin']]
+    licenseRule.enabled = Math.random() > 0.5;
+    licenseRule.new_user_apply = Math.random() > 0.5;
+    licenseRule.license_type = ['Pro', 'Base'][+(Math.random() > 0.5)] as 'Pro' | 'Base';
+    licenseRule.user_filter = [['UserName', 'in', 'admin']];
 
     return licenseRule;
   }

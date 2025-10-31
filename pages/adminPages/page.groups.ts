@@ -10,7 +10,7 @@ export default class GroupsPage {
 
   readonly table: Components.Table;
 
-  readonly newGroupPage: {
+  readonly groupPage: {
     readonly pageTitle: Locator;
     readonly nameField: Components.InputField;
     readonly descriptionField: Components.InputField;
@@ -29,7 +29,7 @@ export default class GroupsPage {
       body: page.locator('.ant-table-body'),
     };
 
-    this.newGroupPage = {
+    this.groupPage = {
       pageTitle: page.locator(':above(form[id=user_create])h2'),
       nameField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(0),

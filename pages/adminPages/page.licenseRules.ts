@@ -10,7 +10,7 @@ export default class LicenseRulesPage {
 
   readonly table: Components.Table;
 
-  readonly newRulePage: {
+  readonly rulePage: {
     readonly pageTitle: Locator;
     readonly nameField: Components.InputField;
     readonly descriptionField: Components.TextareaField;
@@ -34,7 +34,7 @@ export default class LicenseRulesPage {
       body: page.locator('.ant-table-body'),
     };
 
-    this.newRulePage = {
+    this.rulePage = {
       pageTitle: page.locator(':above(form[id=rules_create])h2'),
       nameField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row label').nth(0),
