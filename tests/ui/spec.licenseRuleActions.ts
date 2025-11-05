@@ -288,6 +288,16 @@ test.describe('Действия с правилами распределения
         .locator('button')
         .nth(1)
         .click();
+
+      await test.step('Проверяем модальное окно удаления правила', async () => {
+        await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
+          `Вы уверены что хотите удалить правило "${data.license_rule_uno.name}"?`
+        );
+        await expect(page.locator('.ant-modal-content .ant-modal-body .ant-typography')).toHaveText(
+          'Это действие нельзя отменить.'
+        );
+      });
+
       await commonPage.deleteModal.applyBtn.click();
       licenseRuleDeletionDate = dayjs();
       await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });

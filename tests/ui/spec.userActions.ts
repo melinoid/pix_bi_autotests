@@ -173,7 +173,9 @@ test.describe('Действия с пользователем', async () => {
         await expect(logRow.nth(7)).toHaveText('User');
         // Oбъект операции
         await expect(logRow.nth(8)).toHaveText(`Пользователь: ${data.user_uno.username}`);
-        await expect(logRow.nth(8).locator('ul li a[href*="/admin/users/edit/"]')).toHaveText(data.user_uno.username);
+        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/users/edit/${userGuid}"]`)).toHaveText(
+          data.user_uno.username
+        );
         // Адрес объекта операции
         await expect(logRow.nth(9)).toHaveText(userGuid + '');
         // Субъект операции
@@ -227,6 +229,17 @@ test.describe('Действия с пользователем', async () => {
         data.user_uno.username
       );
       await page.locator('tr.ant-table-row').nth(0).locator('td').last().locator('[data-testid*=delete]').click();
+
+      await test.step('Проверяем модальное окно удаления правила', async () => {
+        await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
+          'Вы уверены что хотите удалить данного пользователя?'
+        );
+        await expect(page.locator('.ant-modal-content .ant-modal-body .ant-typography div')).toHaveText([
+          'Внимание! Удаление приведёт к удалению всех Приложений и Дашбордов в его Персональной Директории!',
+          'Это действие нельзя отменить.',
+        ]);
+      });
+
       await commonPage.deleteModal.applyBtn.click();
       userDeletionDate = dayjs();
       await expect(commonPage.contentLoader).toBeHidden();
@@ -280,7 +293,9 @@ test.describe('Действия с пользователем', async () => {
         await expect(logRow.nth(7)).toHaveText('User');
         // Oбъект операции
         await expect(logRow.nth(8)).toHaveText(`Пользователь: ${data.user_uno.username}`);
-        await expect(logRow.nth(8).locator('ul li a[href*="/admin/users/edit/"]')).toHaveText(data.user_uno.username);
+        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/users/edit/${userGuid}"]`)).toHaveText(
+          data.user_uno.username
+        );
         // Адрес объекта операции
         await expect(logRow.nth(9)).toHaveText(userGuid + '');
         // Субъект операции

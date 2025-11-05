@@ -455,6 +455,13 @@ test.describe('Действия с LDAP импортом пользовател�
         .locator('button')
         .nth(1)
         .click();
+
+      await test.step('Проверяем модальное окно удаления импорта', async () => {
+        await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
+          `При удалении ${data.ldap_connector_uno.name} будут удалены 2 импортированных пользователей`
+        );
+      });
+
       await commonPage.deleteModal.applyBtn.click();
       ldapConnectorDeletionDate = dayjs();
       await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });

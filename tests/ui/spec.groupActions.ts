@@ -1,3 +1,5 @@
+import { rewriteData } from '../../data/data.common';
+import GroupsTD from '../../data/data.groups';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
@@ -134,7 +136,160 @@ test.describe('Действия с группами', async () => {
         await expect(logRow.nth(7)).toHaveText('UserGroup');
         // Oбъект операции
         await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${data.group_uno.name}`);
-        await expect(logRow.nth(8).locator('ul li a[href*="/admin/groups/edit/"]')).toHaveText(data.group_uno.name);
+        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/groups/edit/${groupId}"]`)).toHaveText(
+          data.group_uno.name
+        );
+        // Адрес объекта операции
+        await expect(logRow.nth(9)).toHaveText(groupId + '');
+        // Субъект операции
+        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
+        // Адрес субъекта операции
+        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
+        // Результат операции
+        await expect(logRow.nth(12)).toHaveText('Success');
+      });
+    });
+  });
+
+  /* Create: 05.11.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13074
+
+  1. Открыть подраздел “Группы”
+  – Подраздел открыт
+  2. Проскроллить список вправо (ctrl + скролл вниз)
+  – Список проскроллен
+  3. Нажать на иконку карандаша в строке с произвольным ресурсом
+  – Открыло окно редактирования ресурса
+  4. Изменить произвольные параметры в окне редактирования
+  – Параметры изменены
+  5. Нажать “Сохранить”
+  – Отображается список проверяемых ресурсов
+  6. Проверить, что внесенные изменения отображаются в списке ресурсов
+  – Изменения отображаются для отредактированного ресурса
+  7. Открыть раздел “Администрирование”
+  8. Перейти в подраздел “Журнал событий”
+  – Открыт “Журнал событий”
+  9. Перейти на вкладку “События Информационной Безопасности”
+  – Отображаются “События Информационной Безопасности”
+  10. Проверить запись "Group edited"
+  – В новой записи, в колонке “Объект операции” указана измененная группа
+  – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка
+  11. Проверить ссылки на ресурсы в полях “Объект операции” и “Субьект операции”
+  – Ссылки кликабельны
+  – Ссылки ведут на корректные ресурсы
+  12. Проверить поле “Параметры”
+  – В поле указаны корректные параметры созданного/отредактированного ресурса */
+
+  test('6.1.5. Редактирование группы', async ({ page, commonPage, groupsPage, logsPage, helper, data }) => {
+    const oldGroup = data.group_uno;
+    const newGroup = await GroupsTD.createGroup();
+    let groupUpdationDate: Dayjs;
+    let groupId: string | null;
+
+    await test.step('Ищем подходящую группу', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.openBtn.click();
+      await commonPage.searchField.input.fill(oldGroup.name);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+    });
+    await test.step('Переходим к редактированию группы', async () => {
+      await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();
+      // Вытягиваем ID созданной группы из ссылки
+      groupId = page.url().split('/edit/')[1];
+    });
+    await test.step('Заполняем форму группы', async () => {
+      await groupsPage.groupPage.nameField.input.clear();
+      await groupsPage.groupPage.nameField.input.fill(newGroup.name);
+      await groupsPage.groupPage.descriptionField.input.clear();
+      await groupsPage.groupPage.descriptionField.input.fill(newGroup.description || 'Description undefined');
+    });
+    await test.step('Сохраняем изменения группы', async () => {
+      await groupsPage.groupPage.createBtn.click();
+      groupUpdationDate = dayjs(); // Временем изменения является время отправки запроса
+      await expect(groupsPage.groupPage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await page.waitForLoadState('load');
+      await expect(groupsPage.table.head).toBeVisible();
+    });
+    await test.step('Ищем изменённую группу', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.input.clear();
+      await commonPage.searchField.input.fill(newGroup.name);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+      // Записываем изменённую группу
+      rewriteData('group_uno', newGroup);
+    });
+    await test.step('Проверяем изменённую группу', async () => {
+      const groupRow = groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+      // Название
+      await expect(groupRow.nth(0)).toHaveText(newGroup.name);
+      // Описание
+      await expect(groupRow.nth(1)).toHaveText(newGroup.description || 'Description undefined');
+      // Тип
+      await expect(groupRow.nth(2)).toHaveText('Локальная группа');
+      // Источник
+      await expect(groupRow.nth(3)).toBeEmpty();
+      // Элементы управления
+      await expect(groupRow.locator('button').nth(0)).toBeVisible();
+      await expect(groupRow.locator('button').nth(1)).toBeVisible();
+    });
+
+    await test.step('Проверяем логи в журнале событий', async () => {
+      await test.step('Переходим в "События информационной безопасности"', async () => {
+        await commonPage.adminLinksMenu.logsLink.click();
+        await page.waitForLoadState('load');
+
+        await logsPage.tabs.informationSecurityLogs.click();
+        await expect(commonPage.contentLoader).toBeHidden();
+      });
+      await test.step('Ищем событие изменения группы', async () => {
+        await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
+        await page.getByRole('menuitem', { name: 'Group edited (local)' }).click();
+        // Не работает поиск по объекту операции, ищем по адресу объекта
+        await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
+        await page
+          .locator('input[data-testid*=table-search-input]')
+          .last()
+          .fill(groupId + '');
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+        await expect(commonPage.contentLoader).toBeHidden();
+
+        await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+      });
+      await test.step('Проверяем лог изменения группы', async () => {
+        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+        // Событие
+        await expect(logRow.nth(0)).toHaveText('GroupEdited');
+        // Время
+        expect(
+          Math.abs(groupUpdationDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
+        ).toBeLessThanOrEqual(5);
+        // Параметры
+        await expect(logRow.nth(2).locator('ul li')).toHaveText([
+          'Имя параметра: Name',
+          `Старое значение: ${oldGroup.name}`,
+          `Новое значение: ${newGroup.name}`,
+          'Имя параметра: Description',
+          `Старое значение: ${oldGroup.description}`,
+          `Новое значение: ${newGroup.description}`,
+        ]);
+        // Адрес пользователя
+        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
+        // Имя сервера
+        await expect(logRow.nth(4)).not.toBeEmpty();
+        // Уровень важности
+        await expect(logRow.nth(5)).toHaveText('Info');
+        // Сообщение
+        await expect(logRow.nth(6)).toHaveText('User group was updated');
+        // Раздел
+        await expect(logRow.nth(7)).toHaveText('UserGroup');
+        // Oбъект операции
+        await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${newGroup.name}`);
+        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/groups/edit/${groupId}"]`)).toHaveText(newGroup.name);
         // Адрес объекта операции
         await expect(logRow.nth(9)).toHaveText(groupId + '');
         // Субъект операции
@@ -192,6 +347,16 @@ test.describe('Действия с группами', async () => {
         data.group_uno.name
       );
       await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(1).click();
+
+      await test.step('Проверяем модальное окно удаления группы', async () => {
+        await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
+          `Вы уверены что хотите удалить группу "${data.group_uno.name}"?`
+        );
+        await expect(page.locator('.ant-modal-content .ant-modal-body .ant-typography')).toHaveText(
+          'Это действие нельзя отменить.'
+        );
+      });
+
       await commonPage.deleteModal.applyBtn.click();
       groupDeletionDate = dayjs();
       await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
@@ -248,7 +413,7 @@ test.describe('Действия с группами', async () => {
         await expect(logRow.nth(7)).toHaveText('UserGroup');
         // Oбъект операции
         await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${data.group_uno.name}`);
-        await expect(logRow.nth(8).locator(`ul li a[href="/admin/groups/edit/${groupId}"]`)).toHaveText(
+        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/groups/edit/${groupId}"]`)).toHaveText(
           data.group_uno.name
         );
         // Адрес объекта операции
