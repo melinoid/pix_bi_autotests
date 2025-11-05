@@ -11,7 +11,7 @@ export default class LDAPConnectorTD {
    * Генерация настроек LDAP коннектора.
    * @returns объект с данными коннектора.
    */
-  static async createRule() {
+  static async createLDAPConnector() {
     const ADConfig = getADConfig();
     let ldapConnector = <LDAP>{};
     const ldapConnectorUid = Helper.genUid();

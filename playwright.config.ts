@@ -22,7 +22,7 @@ export default defineConfig({
   },
 
   projects: [
-    // Глобальная UI авторизация
+    // Подготовка тестовых данных
     { name: 'Setup UI Data 32', testMatch: '**/ui/setup/setup.*.ts', teardown: 'Remove UI Data 32' },
     // UI тесты
     {
@@ -37,12 +37,12 @@ export default defineConfig({
     {
       name: 'Remove UI Data 32',
       testMatch: '**/ui/setup/teardown.deleteTestData.ts',
+      timeout: 6000,
     },
     // Глобальная API авторизация
     {
       name: 'Setup API Data 32',
       testMatch: '**/api/setup/setup.getToken.ts',
-      teardown: 'Remove API Data 32',
     },
     // API скрипты
     {
@@ -56,11 +56,6 @@ export default defineConfig({
           'content-type': 'application/json',
         },
       },
-    },
-    // Удаление данных после тестов
-    {
-      name: 'Remove API Data 32',
-      testMatch: '**/api/setup/teardown.deleteTestData.ts',
     },
   ],
 });

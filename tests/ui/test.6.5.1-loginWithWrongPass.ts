@@ -12,20 +12,30 @@ https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13100
   3. Нажать "Войти"
   - Отображается ошибка "Неправильный логин или пароль" */
 
-test('6.5.1. Авторизация существующего пользователя с неверным паролем', async ({ page, loginPage }) => {
+test('6.5.1. Авторизация существующего пользователя с неверным паролем', async ({ page, loginPage, commonPage }) => {
+  const user = { username: getMainUser().username, password: 'boba' };
+
   await test.step('Авторизуемся под существующим пользователем с неверным паролем', async () => {
     await page.goto('/login');
-    await loginPage.authorization({ username: getMainUser().username, password: 'boba' });
+
+    await loginPage.loginForm.loginInput.fill(user.username);
+    await loginPage.loginForm.passwordInput.fill(user.password);
 
     await test.step('Проверяем отображение пароля', async () => {
       // type="password" всегда в браузере визуально скрывает пароль
       expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('password');
       await loginPage.loginForm.showPasswordBtn.click();
       expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('text');
-      await expect( loginPage.loginForm.passwordInput).toHaveValue('boba');
+      await expect(loginPage.loginForm.passwordInput).toHaveValue(user.password);
       await loginPage.loginForm.hidePasswordBtn.click();
       expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('password');
     });
+
+    await loginPage.loginForm.submitBtn.click();
+
+    await expect(loginPage.loginForm.loader).toBeHidden();
+    await page.waitForLoadState('load');
+    await expect(commonPage.mainLoader).toBeHidden();
 
     await expect(loginPage.loginForm.loader).toBeHidden();
   });

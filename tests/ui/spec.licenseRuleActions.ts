@@ -104,9 +104,9 @@ test.describe('Действия с правилами распределения
       // Описание
       await expect(licenseRuleRow.nth(1)).toHaveText(data.license_rule_uno.description);
       // Включена
-      await expect(licenseRuleRow.nth(2)).toHaveText(data.license_rule_uno.enabled ? 'YES' : 'NO');
+      await expect(licenseRuleRow.nth(2)).toHaveText(data.license_rule_uno.enabled ? 'Да' : 'Нет');
       // Применять только к новым пользователям
-      await expect(licenseRuleRow.nth(3)).toHaveText(data.license_rule_uno.new_user_apply ? 'YES' : 'NO');
+      await expect(licenseRuleRow.nth(3)).toHaveText(data.license_rule_uno.new_user_apply ? 'Да' : 'Нет');
       // Тип лицензии
       await expect(licenseRuleRow.nth(4)).toHaveText(data.license_rule_uno.license_type);
       // Фильтр пользователей

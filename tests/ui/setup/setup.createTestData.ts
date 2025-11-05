@@ -10,6 +10,5 @@ setup('Генирируем тестовые данные', async () => {
   writeData('user_uno', await UsersTD.createUser());
   writeData('group_uno', await GroupsTD.createGroup());
   writeData('license_rule_uno', await LicenseRulesTD.createRule());
-  writeData('ldap_connector_uno', await LDAPConnectorTD.createRule());
-  console.log(await LDAPConnectorTD.createRule())
+  writeData('ldap_connector_uno', await LDAPConnectorTD.createLDAPConnector());
 });
