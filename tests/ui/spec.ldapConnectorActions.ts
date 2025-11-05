@@ -1,0 +1,545 @@
+import { userFilterMapping } from '../../pages/page.common';
+import { getMainUser } from '../../utils/config';
+import { test } from '../../utils/fixtures';
+import { expect } from '@playwright/test';
+
+import dayjs, { Dayjs } from 'dayjs';
+import Helper from '../../utils/helper';
+var customParseFormat = require('dayjs/plugin/customParseFormat');
+dayjs.extend(customParseFormat);
+
+test.describe('Действия с LDAP импортом пользователей', async () => {
+  test.beforeEach(async ({ page, loginPage, commonPage }) => {
+    await test.step('Авторизуемся', async () => {
+      await loginPage.goToAuthorizedPage('/login', getMainUser());
+    });
+    await test.step('Переходим в раздел "Администрирование"', async () => {
+      await commonPage.sideMenu.adminBtn.click();
+    });
+    await test.step('Переходим в подраздел "Импорт пользователей"', async () => {
+      await commonPage.adminLinksMenu.usersImportLink.click();
+      await page.waitForLoadState('load');
+      await expect(commonPage.mainLoader).toBeHidden();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
+  });
+
+  /* Create: 01.11.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13077
+
+  1. Открыть подраздел “Импорт пользователей”
+  – Подраздел открыт на вкладке "Ldap"
+  2. Нажать “Создать подключение”
+  - Открыта страница “Создать подключение”
+  3. Выбрать тип "Ldap"
+  - Свитчер включен на "LDAP":
+  4. Заполнить поле “Имя”
+  - Поле заполнено
+  5. Убедиться, что тумблер "Включено" включен
+  - Тоггл включен
+  6. Выключить тумблер “Ленивый импорт”
+  - Тоггл выключен
+  7. Убедиться, что тумблер "Active Directory" включен
+  - Тоггл включен
+  8. Заполнить все поля, указанные в кредах
+  - Поля активны, данные введены
+  9. Нажать "Сохранить"
+  - Появляется уведомление
+  - Открыт подраздел "Импорт пользователей"
+  - Импорт пользователей создан
+  10. Перейти в раздел "Пользователи"
+  11. Нажать на циклическую стрелку «Обновить»
+  - Пользователи из созданного подключения появились в списке пользователей
+  12. Перейти в подраздел “Журнал событий”
+  - Открыт “Журнал событий”
+  13. Перейти на вкладку “События Информационной Безопасности”
+  - Отображаются “События Информационной Безопасности”
+  14. Проверить запись “LdapConnection Created”
+  - Присутствует запись о создании LDAP подключения
+  - В колонке “Объект операции” указано созданное подключение
+  - В колонке “Субъект операции” указан пользователь, под которым выполняется проверка
+  15. Проверить ссылки на ресурсы в полях “Объект операции” и “Субьект операции”
+  - Ссылки кликабельны
+  - Ссылки ведут на корректные ресурсы
+  16. Проверить поле “Параметры”
+  - В поле указаны корректные параметры созданного/отредактированного ресурса
+  17. Проверить запись “NewUsersImportedFromAD”
+  - В новой записи, в колонке “Объект операции” указаны имена импортированных пользователей
+  - В колонке “Субъект операции” указан пользователь, под которым выполняется проверка
+  18. Проверить ссылки на ресурсы в полях “Объект операции” и “Субьект операции”
+  - Ссылки кликабельны
+  - Ссылки ведут на корректные ресурсы
+  19. Проверить поле “Параметры”
+  - В поле указаны корректные параметры созданного/отредактированного ресурса */
+
+  test('6.1.7. Создание LDAP импорта пользователей', async ({
+    page,
+    commonPage,
+    usersImportPage,
+    usersPage,
+    logsPage,
+    helper,
+    data,
+  }) => {
+    let ldapConnectorCreationDate: Dayjs;
+    let ldapConnectorId: string | null;
+
+    await test.step('Переходим к созданию импорта пользователей', async () => {
+      await usersImportPage.createImportBtn.click();
+    });
+    await test.step('Заполняем форму импорта пользователей', async () => {
+      await usersImportPage.ldapImportPage.nameField.input.fill(data.ldap_connector_uno.name);
+      await usersImportPage.ldapImportPage.descriptionField.input.fill(data.ldap_connector_uno.description);
+      if (!data.ldap_connector_uno.enabled) {
+        await usersImportPage.ldapImportPage.enabledToggle.toggle.click();
+      }
+      if (!data.ldap_connector_uno.lazy_import) {
+        await usersImportPage.ldapImportPage.lazyToggle.toggle.click();
+      }
+      if (!data.ldap_connector_uno.active_directory) {
+        await usersImportPage.ldapImportPage.activeDirectoryToggle.toggle.click();
+      }
+      await usersImportPage.ldapImportPage.serverField.input.fill(data.ldap_connector_uno.server);
+      await usersImportPage.ldapImportPage.portField.input.fill(data.ldap_connector_uno.port);
+      await usersImportPage.ldapImportPage.connectionTypeField.input.click();
+      await usersImportPage.ldapImportPage.connectionTypeField.dropdown
+        .locator(`:text-is("${data.ldap_connector_uno.connection_type}")`)
+        .click();
+      await usersImportPage.ldapImportPage.adUserField.input.fill(data.ldap_connector_uno.ad_user);
+      await usersImportPage.ldapImportPage.adPasswordField.input.fill(data.ldap_connector_uno.ad_password);
+      await usersImportPage.ldapImportPage.domainField.input.fill(data.ldap_connector_uno.domain);
+      if (data.ldap_connector_uno.ssl) {
+        await usersImportPage.ldapImportPage.sslToggle.toggle.click();
+      }
+      if (data.ldap_connector_uno.tls) {
+        await usersImportPage.ldapImportPage.tlsToggle.toggle.click();
+      }
+      await usersImportPage.ldapImportPage.searchBaseField.input.fill(data.ldap_connector_uno.search_base);
+      await usersImportPage.ldapImportPage.adQueryField.textarea.fill(data.ldap_connector_uno.ad_query);
+      await usersImportPage.ldapImportPage.ldapProtocolField.input.click();
+      await usersImportPage.ldapImportPage.ldapProtocolField.dropdown
+        .locator(`:text-is("${data.ldap_connector_uno.ldap_protocol_version}")`)
+        .click();
+      await usersImportPage.ldapImportPage.timeoutField.input.clear();
+      await usersImportPage.ldapImportPage.timeoutField.input.fill(data.ldap_connector_uno.timeout);
+
+      // Проверим дополнительно аттрибуты маппинга
+      await usersImportPage.ldapImportPage.expandMappingFormHeader.click();
+      await expect(usersImportPage.ldapImportPage.mappingForm.displayNameField.input).toHaveValue('name');
+      await expect(usersImportPage.ldapImportPage.mappingForm.emailField.input).toHaveValue('mail');
+      await expect(usersImportPage.ldapImportPage.mappingForm.accountNameField.input).toHaveValue('sAMAccountName');
+      await expect(usersImportPage.ldapImportPage.mappingForm.objectSIDField.input).toHaveValue('objectSid');
+      await expect(usersImportPage.ldapImportPage.mappingForm.groupMembershipField.input).toHaveValue('memberof');
+      await expect(usersImportPage.ldapImportPage.mappingForm.objectClassField.input).toHaveValue('objectclass');
+      await expect(usersImportPage.ldapImportPage.mappingForm.userObjectClassField.input).toHaveValue('person');
+      await expect(usersImportPage.ldapImportPage.mappingForm.groupObjectClassField.input).toHaveValue('group');
+    });
+    await test.step('Создаём импорт пользователей ', async () => {
+      await usersImportPage.ldapImportPage.createBtn.click();
+      ldapConnectorCreationDate = dayjs(); // Временем создания является время отправки запроса
+      await expect(page.locator('.ant-notification-notice-success')).toBeInViewport({ timeout: 30000 });
+      await page.waitForLoadState('load');
+      await expect(usersImportPage.table.head).toBeVisible();
+    });
+    await test.step('Ищем созданный импорт пользователей', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.openBtn.click();
+      await commonPage.searchField.input.fill(data.ldap_connector_uno.name);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(usersImportPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+    });
+    await test.step('Проверяем созданный импорт пользователей', async () => {
+      const ldapconnectorRow = usersImportPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+      // Название
+      await expect(ldapconnectorRow.nth(0)).toHaveText(data.ldap_connector_uno.name);
+      // Описание
+      await expect(ldapconnectorRow.nth(1)).toHaveText(data.ldap_connector_uno.description);
+      // Включен
+      await expect(ldapconnectorRow.nth(2)).toHaveText(data.ldap_connector_uno.enabled ? 'Дa' : 'Нет');
+      // Сервер
+      await expect(ldapconnectorRow.nth(3)).toHaveText(data.ldap_connector_uno.server);
+      // Порт
+      await expect(ldapconnectorRow.nth(4)).toHaveText(data.ldap_connector_uno.port);
+      // Пользователь AD
+      await expect(ldapconnectorRow.nth(5)).toHaveText(data.ldap_connector_uno.ad_user);
+      // Домен
+      await expect(ldapconnectorRow.nth(6)).toHaveText(data.ldap_connector_uno.domain);
+      // SSL
+      await expect(ldapconnectorRow.nth(7)).toHaveText(data.ldap_connector_uno.ssl ? 'Дa' : 'Нет');
+      // TLS
+      await expect(ldapconnectorRow.nth(8)).toHaveText(data.ldap_connector_uno.tls ? 'Дa' : 'Нет');
+      // Протокол LDAP
+      await expect(ldapconnectorRow.nth(9)).toHaveText(data.ldap_connector_uno.ldap_protocol_version.slice(-1));
+      // Способ подключения
+      await expect(ldapconnectorRow.nth(10)).toHaveText(data.ldap_connector_uno.connection_type);
+      // База поиска
+      await expect(ldapconnectorRow.nth(11)).toHaveText(data.ldap_connector_uno.search_base);
+      // AD запрос
+      await expect(ldapconnectorRow.nth(12)).toHaveText(data.ldap_connector_uno.ad_query);
+      // Регламент
+      await expect(ldapconnectorRow.nth(13)).toBeEmpty();
+
+      // Элементы управления
+      await expect(ldapconnectorRow.locator('button').nth(0)).toBeVisible();
+      await expect(ldapconnectorRow.locator('button').nth(1)).toBeVisible();
+
+      // Вытягиваем ID созданного правила из ссылки
+      await ldapconnectorRow.locator('button').nth(0).click();
+      ldapConnectorId = page.url().split('/user-connector/')[1];
+    });
+    await test.step('Переходим в подраздел "Пользователи"', async () => {
+      await commonPage.adminLinksMenu.usersLink.click();
+      await page.waitForLoadState('load');
+      await expect(commonPage.mainLoader).toBeHidden();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
+    await test.step('Запускаем импорт пользователей', async () => {
+      await commonPage.refreshBtn.click();
+      await expect(page.locator('.ant-notification-notice-closable .ant-notification-notice-message')).toHaveText(
+        'Выполняется импорт Пользователей из AD, это может занять некоторое время'
+      );
+      await expect(page.locator('.ant-notification-notice-closable')).toBeHidden({ timeout: 120000 });
+    });
+    await test.step('Проверяем импортированных пользователей', async () => {
+      await usersPage.table.head.locator('th.ant-table-cell').nth(15).locator('button').nth(1).click();
+      await page.locator('.ant-popover-inner input[type=text]').fill(data.ldap_connector_uno.name);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      await expect(commonPage.contentLoader).toBeHidden();
+      await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(2);
+
+      await expect(usersPage.table.body.locator('tr.ant-table-row td:nth-child(2)')).toHaveText(['UGPN31', 'UGPN32']);
+    });
+
+    await test.step('Проверяем логи в журнале событий', async () => {
+      let ldapConnectorLogID = -1;
+
+      await test.step('Переходим в "События информационной безопасности"', async () => {
+        await commonPage.adminLinksMenu.logsLink.click();
+        await page.waitForLoadState('load');
+
+        await logsPage.tabs.informationSecurityLogs.click();
+        await expect(commonPage.contentLoader).toBeHidden();
+      });
+      await test.step('Ищем событие создания импортa пользователей', async () => {
+        await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
+        await page.getByRole('menuitem', { name: 'LDAP connection created' }).click();
+
+        await logsPage.table.head.locator('th.ant-table-cell').nth(1).locator('[data-testid*=table-filter]').click();
+        await page.locator('input[date-range=start]').fill(dayjs(ldapConnectorCreationDate).format('DD.MM.YYYY'));
+        await page.locator('input[date-range=end]').fill(dayjs(ldapConnectorCreationDate).format('DD.MM.YYYY'));
+        await page.locator('input[date-range=end]').click();
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+        await expect(commonPage.contentLoader).toBeHidden();
+
+        // Получаем порядковый номер строки с логом
+        const rowCount = await logsPage.table.body.locator('.ant-table-row').count();
+        for (let i = 0; i < rowCount; i++) {
+          const rowText = (await logsPage.table.body.locator('.ant-table-row').nth(i).textContent())?.includes(
+            data.ldap_connector_uno.name
+          );
+          if (rowText) {
+            ldapConnectorLogID = i;
+            break;
+          } else {
+            throw Error(`Не удалось найти лог создания импорта: ${data.ldap_connector_uno.name}`);
+          }
+        }
+        await test.step('Проверяем лог создания импорта пользователей', async () => {
+          const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(ldapConnectorLogID).locator('td');
+          // Событие
+          await expect(logRow.nth(0)).toHaveText('LdapConnectionCreated');
+          // Время
+          expect(
+            Math.abs(
+              ldapConnectorCreationDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second')
+            )
+          ).toBeLessThanOrEqual(7);
+          // Параметры
+          await expect(logRow.nth(2).locator('ul li')).toHaveText([
+            'Имя параметра: Name',
+            `Значение: ${data.ldap_connector_uno.name}`,
+            'Имя параметра: IsEnabled',
+            `Значение: ${Helper.capitalize(data.ldap_connector_uno.enabled + '')}`,
+            'Имя параметра: Server',
+            `Значение: ${data.ldap_connector_uno.server}`,
+            'Имя параметра: IsActiveDirectory',
+            `Значение: ${Helper.capitalize(data.ldap_connector_uno.active_directory + '')}`,
+            'Имя параметра: UseLazyLoad',
+            `Значение: ${Helper.capitalize(data.ldap_connector_uno.lazy_import + '')}`,
+            'Имя параметра: Port',
+            `Значение: ${data.ldap_connector_uno.port}`,
+            'Имя параметра: User',
+            `Значение: ${data.ldap_connector_uno.ad_user}`,
+            'Имя параметра: Domain',
+            `Значение: ${data.ldap_connector_uno.domain}`,
+            'Имя параметра: IsSsl',
+            `Значение: ${Helper.capitalize(data.ldap_connector_uno.ssl + '')}`,
+            'Имя параметра: IsTls',
+            `Значение: ${Helper.capitalize(data.ldap_connector_uno.tls + '')}`,
+            'Имя параметра: ProtocolVersion',
+            `Значение: ${data.ldap_connector_uno.ldap_protocol_version.slice(-1)}`,
+            'Имя параметра: BindType',
+            `Значение: ${data.ldap_connector_uno.connection_type}`,
+            'Имя параметра: SearchBase',
+            `Значение: ${data.ldap_connector_uno.search_base}`,
+            'Имя параметра: Query',
+            `Значение: ${data.ldap_connector_uno.ad_query}`,
+            'Имя параметра: UserGroupQuery',
+            `Значение: ${data.ldap_connector_uno.sync_groups}`,
+            'Имя параметра: Timeout',
+            `Значение: ${data.ldap_connector_uno.timeout}`,
+            'Имя параметра: Description',
+            `Значение: ${data.ldap_connector_uno.description}`,
+            'Имя параметра: CronSettings IsEnabled',
+            `Значение: ${Helper.capitalize(data.ldap_connector_uno.periodic_update.enabled + '')}`,
+            'Имя параметра: CronSettings TimeZone',
+            `Значение: ${data.ldap_connector_uno.periodic_update.timezone}`,
+            'Имя параметра: CronSettings Expression',
+            `Значение: ${data.ldap_connector_uno.periodic_update.cron}`,
+          ]);
+          // Адрес пользователя
+          expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
+          // Имя сервера
+          await expect(logRow.nth(4)).not.toBeEmpty();
+          // Уровень важности
+          await expect(logRow.nth(5)).toHaveText('Warn');
+          // Сообщение
+          await expect(logRow.nth(6)).toHaveText('LDAP users connector was created');
+          // Раздел
+          await expect(logRow.nth(7)).toHaveText('UserConnector');
+          // Oбъект операции
+          await expect(logRow.nth(8)).toHaveText(`Импорт пользователей: ${data.ldap_connector_uno.name}`);
+          await expect(logRow.nth(8).locator('ul li a[href*="/admin/user-connector/"]')).toHaveText(
+            data.ldap_connector_uno.name
+          );
+          // Адрес объекта операции
+          // TODO: не сходятся id созданного коннектора в журнале, нет возможности явно определить строку
+          // https://jira.pix.ru/browse/BI-7666
+          // await expect(logRow.nth(9)).toHaveText(ldapConnectorId + '');
+          // Субъект операции
+          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
+          // Адрес субъекта операции
+          expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
+          // Результат операции
+          await expect(logRow.nth(12)).toHaveText('Success');
+        });
+      });
+      await test.step('Ищем событие импортa пользователей', async () => {
+        await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
+        await page.getByRole('menuitem', { name: 'New users imported from AD' }).click();
+
+        await logsPage.table.head.locator('th.ant-table-cell').nth(1).locator('[data-testid*=table-filter]').click();
+        await page.locator('input[date-range=start]').fill(dayjs(ldapConnectorCreationDate).format('DD.MM.YYYY'));
+        await page.locator('input[date-range=end]').fill(dayjs(ldapConnectorCreationDate).format('DD.MM.YYYY'));
+        await page.locator('input[date-range=end]').click();
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+        await expect(commonPage.contentLoader).toBeHidden();
+
+        // Получаем порядковый номер строки с логом
+        const rowCount = await logsPage.table.body.locator('.ant-table-row').count();
+        for (let i = 0; i < rowCount; i++) {
+          const rowText = (await logsPage.table.body.locator('.ant-table-row').nth(i).textContent())?.includes(
+            'UGPN31, UGPN32'
+          );
+          if (rowText) {
+            ldapConnectorLogID = i;
+            break;
+          } else {
+            throw Error(`Не удалось найти лог импорта: ${data.ldap_connector_uno.name}`);
+          }
+        }
+        await test.step('Проверяем лог импорта пользователей', async () => {
+          const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(ldapConnectorLogID).locator('td');
+          // Событие
+          await expect(logRow.nth(0)).toHaveText('NewUsersImportedFromAD');
+          // Время
+          expect(
+            Math.abs(
+              ldapConnectorCreationDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'minute')
+            )
+          ).toBeLessThanOrEqual(3);
+          // Параметры
+          await expect(logRow.nth(2).locator('ul li')).toHaveText([
+            'Имя параметра: UserNames',
+            `Значение: UGPN31, UGPN32`,
+          ]);
+          // Адрес пользователя
+          expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
+          // Имя сервера
+          await expect(logRow.nth(4)).not.toBeEmpty();
+          // Уровень важности
+          await expect(logRow.nth(5)).toHaveText('Info');
+          // Сообщение
+          await expect(logRow.nth(6)).toHaveText('AD users were imported');
+          // Раздел
+          await expect(logRow.nth(7)).toHaveText('User');
+          // Oбъект операции
+          // TODO: дублируются объекты в ссылках
+          await expect(logRow.nth(8)).toHaveText(`Пользователь: UGPN31, UGPN32UGPN31, UGPN32`);
+          await expect(logRow.nth(8).locator('ul li a[href*="/admin/users/edit"]')).toHaveText([
+            'UGPN31, UGPN32',
+            'UGPN31, UGPN32',
+          ]);
+          // Адрес объекта операции
+          const guids = (await logRow.nth(11).textContent())?.split(', ') || [];
+          for (let guid of guids) {
+            expect(guid).toMatch(helper.regexMasks.guid);
+          }
+          // Субъект операции
+          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
+          // Адрес субъекта операции
+          expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
+          // Результат операции
+          await expect(logRow.nth(12)).toHaveText('Success');
+        });
+      });
+    });
+  });
+
+  /* Create: 01.11.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13079
+
+  1. Открыть подраздел “Импорт пользователей”
+  – Подраздел открыт на вкладке "Ldap"
+  2. Проскроллить список вправо (ctrl + скролл вниз)
+  – Список проскроллен
+  3. Нажать на иконку корзины в строке с произвольным ресурсом
+  – Отрыто модельное окно
+  – Если удаляемым импортом в системе были созданы пользователи, то их кол-во отображается в окне
+  4. Нажать “Удалить”
+  – Импорт удалён и более не отображается в списке
+  – Импортированные пользователи так же удалены, если не привязаны к дополнительным импортам */
+
+  test('6.1.12. Удаление импорта пользователей', async ({
+    page,
+    commonPage,
+    usersImportPage,
+    logsPage,
+    helper,
+    data,
+  }) => {
+    let ldapConnectorId: string | null;
+    let ldapConnectorDeletionDate: Dayjs;
+
+    await test.step('Ищем созданный ldap импорт', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.openBtn.click();
+      await commonPage.searchField.input.fill(data.ldap_connector_uno.name);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(usersImportPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+      // Вытягиваем ID созданного правила из ссылки
+      await usersImportPage.table.body
+        .locator('tr.ant-table-row')
+        .nth(0)
+        .locator('td')
+        .locator('button')
+        .nth(0)
+        .click();
+      ldapConnectorId = page.url().split('/user-connector/')[1];
+      await commonPage.adminLinksMenu.usersImportLink.click();
+    });
+    await test.step('Удаляем импорт пользователей', async () => {
+      await expect(usersImportPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
+        data.ldap_connector_uno.name
+      );
+      await usersImportPage.table.body
+        .locator('tr.ant-table-row')
+        .nth(0)
+        .locator('td')
+        .locator('button')
+        .nth(1)
+        .click();
+      await commonPage.deleteModal.applyBtn.click();
+      ldapConnectorDeletionDate = dayjs();
+      await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+    });
+    await test.step('Проверяем отсутствие импорта пользователей', async () => {
+      await expect(usersImportPage.table.body.locator('.ant-table-expanded-row-fixed .ant-empty')).toBeVisible();
+    });
+
+    await test.step('Проверяем логи в журнале событий', async () => {
+      let ldapConnectorLogID = -1;
+
+      await test.step('Переходим в "События информационной безопасности"', async () => {
+        await commonPage.adminLinksMenu.logsLink.click();
+        await page.waitForLoadState('load');
+
+        await logsPage.tabs.informationSecurityLogs.click();
+        await expect(commonPage.contentLoader).toBeHidden();
+      });
+      await test.step('Ищем событие удаления импортa пользователей', async () => {
+        await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
+        await page.getByRole('menuitem', { name: 'LDAP connection deleted' }).click();
+
+        await logsPage.table.head.locator('th.ant-table-cell').nth(1).locator('[data-testid*=table-filter]').click();
+        await page.locator('input[date-range=start]').fill(dayjs(ldapConnectorDeletionDate).format('DD.MM.YYYY'));
+        await page.locator('input[date-range=end]').fill(dayjs(ldapConnectorDeletionDate).format('DD.MM.YYYY'));
+        await page.locator('input[date-range=end]').click();
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+        await expect(commonPage.contentLoader).toBeHidden();
+
+        // Получаем порядковый номер строки с логом
+        const rowCount = await logsPage.table.body.locator('.ant-table-row').count();
+        for (let i = 0; i < rowCount; i++) {
+          const rowText = (await logsPage.table.body.locator('.ant-table-row').nth(i).textContent())?.includes(
+            data.ldap_connector_uno.name
+          );
+          if (rowText) {
+            ldapConnectorLogID = i;
+            break;
+          } else {
+            throw Error(`Не удалось найти лог удаления импорта: ${data.ldap_connector_uno.name}`);
+          }
+        }
+        await test.step('Проверяем лог удаления импорта пользователей', async () => {
+          const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(ldapConnectorLogID).locator('td');
+          // Событие
+          await expect(logRow.nth(0)).toHaveText('LdapConnectionDeleted');
+          // Время
+          expect(
+            Math.abs(
+              ldapConnectorDeletionDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second')
+            )
+          ).toBeLessThanOrEqual(7);
+          // Параметры
+          await expect(logRow.nth(2).locator('ul li')).toHaveText([
+            'Имя параметра: Name',
+            `Значение: ${data.ldap_connector_uno.name}`,
+          ]);
+          // Адрес пользователя
+          expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
+          // Имя сервера
+          await expect(logRow.nth(4)).not.toBeEmpty();
+          // Уровень важности
+          await expect(logRow.nth(5)).toHaveText('Warn');
+          // Сообщение
+          await expect(logRow.nth(6)).toHaveText('LDAP users connector was deleted');
+          // Раздел
+          await expect(logRow.nth(7)).toHaveText('UserConnector');
+          // Oбъект операции
+          await expect(logRow.nth(8)).toHaveText(`Импорт пользователей: ${data.ldap_connector_uno.name}`);
+          await expect(logRow.nth(8).locator('ul li a[href*="/admin/user-connector/"]')).toHaveText(
+            data.ldap_connector_uno.name
+          );
+          // Адрес объекта операции
+          // TODO: не сходятся id созданного коннектора в журнале, нет возможности явно определить строку
+          // https://jira.pix.ru/browse/BI-7666
+          // await expect(logRow.nth(9)).toHaveText(ldapConnectorId + '');
+          // Субъект операции
+          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
+          // Адрес субъекта операции
+          expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
+          // Результат операции
+          await expect(logRow.nth(12)).toHaveText('Success');
+        });
+      });
+    });
+  });
+});

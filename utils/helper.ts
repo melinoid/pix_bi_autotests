@@ -33,8 +33,8 @@ export default class Helper {
    * @param str строка.
    * @returns строка.
    */
-  static toUpperCaseFirst(str: string) {
-    return str.replace(/( |^)[а-яёa-z]/g, function (x) {
+  static capitalize(str: string) {
+    return str.replace(/( |^)\p{L}/gu, function (x) {
       return x.toUpperCase();
     });
   }

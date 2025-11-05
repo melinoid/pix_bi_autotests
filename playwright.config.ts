@@ -7,7 +7,7 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: 'list',
-  timeout: 60000,
+  timeout: 120000,
   snapshotPathTemplate: '{testDir}/screenshots/{testFilePath}/{arg}{ext}',
 
   use: {

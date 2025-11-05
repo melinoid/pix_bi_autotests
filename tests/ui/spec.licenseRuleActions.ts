@@ -24,6 +24,7 @@ test.describe('Действия с правилами распределения
   });
 
   /* Create: 31.10.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13084
 
   1. Открыть подраздел “Распределение лицензий”
   – Подраздел открыт
@@ -50,8 +51,7 @@ test.describe('Действия с правилами распределения
   11. Проверить запись "LicenseRule Created"
   – Присутствует запись о создании правила распределения лицензий
   – В колонке “Объект операции” указано созданное правило
-  – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка
- */
+  – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
   test('6.2.1. Создание распределения лицензий', async ({
     page,
@@ -77,10 +77,8 @@ test.describe('Действия с правилами распределения
         await licenseRulesPage.rulePage.newUserApplyCheckbox.checkbox.click();
       }
       await licenseRulesPage.rulePage.licenseTypeField.input.click();
-      await page
-        .locator(
-          `:right-of(.ant-layout-sider-light):below(h2) .rc-virtual-list-holder-inner :text-is("${data.license_rule_uno.license_type}")`
-        )
+      await licenseRulesPage.rulePage.licenseTypeField.dropdown
+        .locator(`:text-is("${data.license_rule_uno.license_type}")`)
         .click();
       await commonPage.fillUserFilter(data.license_rule_uno.user_filter);
     });
@@ -99,7 +97,7 @@ test.describe('Действия с правилами распределения
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
     });
-    await test.step('Проверяем созданную группу', async () => {
+    await test.step('Проверяем созданное правило', async () => {
       const licenseRuleRow = licenseRulesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
       // Название
       await expect(licenseRuleRow.nth(0)).toHaveText(data.license_rule_uno.name);
@@ -154,10 +152,10 @@ test.describe('Действия с правилами распределения
         await logsPage.tabs.informationSecurityLogs.click();
         await expect(commonPage.contentLoader).toBeHidden();
       });
-      await test.step('Ищем событие создания пользователя', async () => {
+      await test.step('Ищем событие создания правила', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'License rule created' }).click();
-        // TODO: не работает поиск по объекту операции, ищем по адресу объекта
+        // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page
           .locator('input[data-testid*=table-search-input]')
@@ -169,7 +167,7 @@ test.describe('Действия с правилами распределения
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
-      await test.step('Проверяем лог создания пользователя', async () => {
+      await test.step('Проверяем лог создания правила', async () => {
         const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
         // Событие
         await expect(logRow.nth(0)).toHaveText('LicenseRuleCreated');
@@ -220,6 +218,7 @@ test.describe('Действия с правилами распределения
   });
 
   /* Create: 31.10.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13086
 
     1. Открыть подраздел “Распределение лицензий”
     - Подраздел открыт
@@ -247,8 +246,7 @@ test.describe('Действия с правилами распределения
     – Ссылки кликабельны.
     – Ссылки ведут на корректные ресурсы
     11. Проверить поле “Параметры”
-    – В поле указаны корректные параметры созданного/отредактированного ресурса
-    */
+    – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.2.3. Удаление распределения лицензий', async ({
     page,
@@ -280,6 +278,9 @@ test.describe('Действия с правилами распределения
       await commonPage.adminLinksMenu.licenseRulesLink.click();
     });
     await test.step('Удаляем распределениe лицензий', async () => {
+      await expect(licenseRulesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
+        data.license_rule_uno.name
+      );
       await licenseRulesPage.table.body
         .locator('tr.ant-table-row')
         .nth(0)
@@ -306,7 +307,7 @@ test.describe('Действия с правилами распределения
       await test.step('Ищем событие удаления распределения лицензий', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'License rule deleted' }).click();
-        // TODO: не работает поиск по объекту операции, ищем по адресу объекта
+        // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page
           .locator('input[data-testid*=table-search-input]')

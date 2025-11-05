@@ -44,10 +44,12 @@ export default class CommonPage {
     readonly specialApiLink: Locator;
   };
 
+  readonly refreshBtn: Locator;
   readonly searchField: Components.SearchField;
 
   readonly deleteModal: Components.DeleteModal;
 
+  // Лоадеры-спинеры
   readonly mainLoader: Locator;
   readonly contentLoader: Locator;
 
@@ -94,6 +96,7 @@ export default class CommonPage {
       specialApiLink: page.locator('.ant-menu').nth(1).locator('.ant-menu-item a[href="/admin/special-api"]'),
     };
 
+    this.refreshBtn = page.locator('//button[contains(@class, "SearchUpdateButtons_refresh")]');
     this.searchField = {
       openBtn: page.locator('//button[contains(@class, "SearchUpdateButtons_search")]'),
       input: page.locator('//div[contains(@class, "SearchUpdateButtons")]').locator('input'),

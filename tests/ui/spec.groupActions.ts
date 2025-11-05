@@ -23,6 +23,7 @@ test.describe('Действия с группами', async () => {
   });
 
   /* Create: 17.09.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13075
 
   1. Открыть подраздел “Группы”
   – Подраздел открыт
@@ -99,7 +100,7 @@ test.describe('Действия с группами', async () => {
       await test.step('Ищем событие создания группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group created (local)' }).click();
-        // TODO: не работает поиск по объекту операции, ищем по адресу объекта
+        // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page
           .locator('input[data-testid*=table-search-input]')
@@ -147,6 +148,7 @@ test.describe('Действия с группами', async () => {
   });
 
   /* Create: 17.09.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13076
 
   1. Открыть подраздел “Группы”
   - Подраздел открыт
@@ -186,6 +188,9 @@ test.describe('Действия с группами', async () => {
       await commonPage.adminLinksMenu.groupsLink.click();
     });
     await test.step('Удаляем группу', async () => {
+      await expect(groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
+        data.group_uno.name
+      );
       await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(1).click();
       await commonPage.deleteModal.applyBtn.click();
       groupDeletionDate = dayjs();
@@ -206,7 +211,7 @@ test.describe('Действия с группами', async () => {
       await test.step('Ищем событие удаления группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group deleted (local)' }).click();
-        // TODO: не работает поиск по объекту операции, ищем по адресу объекта
+        // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page
           .locator('input[data-testid*=table-search-input]')
@@ -243,7 +248,9 @@ test.describe('Действия с группами', async () => {
         await expect(logRow.nth(7)).toHaveText('UserGroup');
         // Oбъект операции
         await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${data.group_uno.name}`);
-        await expect(logRow.nth(8).locator(`ul li a[href="/admin/groups/edit/${groupId}"]`)).toHaveText(data.group_uno.name);
+        await expect(logRow.nth(8).locator(`ul li a[href="/admin/groups/edit/${groupId}"]`)).toHaveText(
+          data.group_uno.name
+        );
         // Адрес объекта операции
         await expect(logRow.nth(9)).toHaveText(groupId + '');
         // Субъект операции

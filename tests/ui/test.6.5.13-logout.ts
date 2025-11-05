@@ -1,8 +1,10 @@
+import dayjs from 'dayjs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 /* Created 17.09.2025
+https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13112
 
 1. В поле "Логин" ввести логин существующего пользователя
 - Поле заполнено
@@ -21,7 +23,13 @@ test('6.5.13. Выход из системы', async ({ page, loginPage, mainPag
     await expect(loginPage.loginForm.loader).toBeHidden();
   });
   await test.step('Проверяем авторизацию', async () => {
-    await expect(mainPage.pageTitle).toHaveText(`Добрый день, ${getMainUser().username}`);
+    const hour = dayjs().hour();
+    let helloText = 'Доброе утро';
+    if (hour > 12) helloText = 'Добрый день';
+    if (hour > 16) helloText = 'Добрый вечер';
+    if (hour > 21 || hour < 4) helloText = 'Доброй ночи';
+
+    await expect(mainPage.pageTitle).toHaveText(`${helloText}, ${getMainUser().username}`);
   });
   await test.step('Выходим из системы', async () => {
     await commonPage.sideMenu.logoutBtn.click();

@@ -14,18 +14,18 @@ export interface LDAP {
   lazy_import: boolean;
   active_directory: boolean;
   server: string;
-  port: number;
+  port: string;
   connection_type: 'Simple' | 'SASL';
   ad_user: string;
   ad_password: string;
-  domain: string;
+  domain?: string;
   ssl: boolean;
   tls: boolean;
   search_base: string;
   ad_query: string;
   sync_groups?: string;
   ldap_protocol_version: 'LDAP V2' | 'LDAP V3';
-  timeout: number;
+  timeout: string;
   periodic_update?: {
     enabled: boolean;
     timezone: string;

@@ -3,6 +3,7 @@ import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 /* Created 16.09.2025
+https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13100
 
   1. В поле "Логин" ввести логин существующего пользователя
   - Поле ввода активно, данные введены
@@ -21,6 +22,7 @@ test('6.5.1. Авторизация существующего пользова�
       expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('password');
       await loginPage.loginForm.showPasswordBtn.click();
       expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('text');
+      await expect( loginPage.loginForm.passwordInput).toHaveValue('boba');
       await loginPage.loginForm.hidePasswordBtn.click();
       expect(await loginPage.loginForm.passwordInput.getAttribute('type')).toBe('password');
     });

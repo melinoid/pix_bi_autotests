@@ -23,6 +23,7 @@ test.describe('Действия с пользователем', async () => {
   });
 
   /* Create: 16.09.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13070
 
   1. Открыть подраздел “Пользователи”
   - Подаздел открыт
@@ -127,7 +128,7 @@ test.describe('Действия с пользователем', async () => {
       await test.step('Ищем событие создания пользователя', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'User created' }).click();
-        // TODO: не работает поиск по объекту операции, ищем по адресу объекта
+        // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page
           .locator('input[data-testid*=table-search-input]')
@@ -186,6 +187,7 @@ test.describe('Действия с пользователем', async () => {
   });
 
   /* Create: 16.09.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13073
 
   1. Открыть подраздел “Пользователи”
   - Подаздел открыт
@@ -221,6 +223,9 @@ test.describe('Действия с пользователем', async () => {
       userGuid = await usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(13).textContent();
     });
     await test.step('Удаляем пользователя', async () => {
+      await expect(usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(1)).toHaveText(
+        data.user_uno.username
+      );
       await page.locator('tr.ant-table-row').nth(0).locator('td').last().locator('[data-testid*=delete]').click();
       await commonPage.deleteModal.applyBtn.click();
       userDeletionDate = dayjs();
@@ -241,7 +246,7 @@ test.describe('Действия с пользователем', async () => {
       await test.step('Ищем событие удаления пользователя', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'User deleted (local)' }).click();
-        // TODO: не работает поиск по объекту операции, ищем по адресу объекта
+        // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page
           .locator('input[data-testid*=table-search-input]')

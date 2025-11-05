@@ -1,11 +1,10 @@
 import { User } from '../data/data';
 
 /**
- * Function returns an object with User data.
+ * Возвращает данные основного пользователя.
  *
- * Perhaps this is an interim function (returns just `username`, `pass`).
- * Will later be expanded for e2e tests.
- * @returns `User`
+ * Содержит имя пользователя и праоль для основной авторизации.
+ * @returns объект `User`
  */
 export function getMainUser() {
   const user = <User>{
@@ -20,8 +19,8 @@ export function getMainUser() {
 }
 
 /**
- * Function returns api token for api project from BI_TOKEN env variable.
- * @returns api key.
+ * Возвращает API токен.
+ * @returns строка с токеном.
  */
 export function getApiToken() {
   const apiKey = process.env.BI_TOKEN;
@@ -29,5 +28,20 @@ export function getApiToken() {
     return apiKey;
   } else {
     throw Error('BI_TOKEN env variable is empty.');
+  }
+}
+
+export function getADConfig() {
+  const adConfig = {
+    user: process.env.AD_USERNAME,
+    password: process.env.AD_PASSWORD,
+    host: process.env.AD_HOST,
+    port: process.env.AD_PORT,
+    domen: process.env.AD_DOMEN,
+  };
+  if (adConfig.user && adConfig.password && adConfig.host && adConfig.port) {
+    return adConfig;
+  } else {
+    throw Error('Check Acive Directory credentials in autotests environment.');
   }
 }

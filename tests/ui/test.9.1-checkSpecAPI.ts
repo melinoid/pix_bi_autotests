@@ -3,6 +3,7 @@ import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 /* Created 16.09.2025
+https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13159
 
 1. Открыть подраздел "Специальные API"
 - Отображается список специальных API */
