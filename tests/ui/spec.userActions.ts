@@ -1,3 +1,4 @@
+import { LogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
@@ -141,49 +142,33 @@ test.describe('Действия с пользователем', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог создания пользователя', async () => {
-        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Событие
-        await expect(logRow.nth(0)).toHaveText('UserCreated');
-        // Время
-        expect(
-          Math.abs(userCreationDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
-        ).toBeLessThanOrEqual(1);
-        // Параметры
-        await expect(logRow.nth(2).locator('ul li')).toHaveText([
-          'Имя параметра: UserName',
-          `Значение: ${data.user_uno.username}`,
-          'Имя параметра: Email',
-          `Значение: ${data.user_uno.email}`,
-          'Имя параметра: Groups',
-          'Значение: (пусто)',
-          'Имя параметра: ForceChangeOnLogin',
-          'Значение: False',
-          'Имя параметра: Inactive',
-          'Значение: False',
-        ]);
-        // Адрес пользователя
-        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
-        // Имя сервера
-        await expect(logRow.nth(4)).not.toBeEmpty();
-        // Уровень важности
-        await expect(logRow.nth(5)).toHaveText('Info');
-        // Сообщение
-        await expect(logRow.nth(6)).toHaveText('User was created');
-        // Раздел
-        await expect(logRow.nth(7)).toHaveText('User');
-        // Oбъект операции
-        await expect(logRow.nth(8)).toHaveText(`Пользователь: ${data.user_uno.username}`);
-        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/users/edit/${userGuid}"]`)).toHaveText(
-          data.user_uno.username
-        );
-        // Адрес объекта операции
-        await expect(logRow.nth(9)).toHaveText(userGuid + '');
-        // Субъект операции
-        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
-        // Адрес субъекта операции
-        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
-        // Результат операции
-        await expect(logRow.nth(12)).toHaveText('Success');
+        const userDeleteLogInfo: LogInfo = {
+          event: 'UserCreated',
+          time: userCreationDate,
+          options: [
+            'Имя параметра: UserName',
+            `Значение: ${data.user_uno.username}`,
+            'Имя параметра: Email',
+            `Значение: ${data.user_uno.email}`,
+            'Имя параметра: Groups',
+            'Значение: (пусто)',
+            'Имя параметра: ForceChangeOnLogin',
+            'Значение: False',
+            'Имя параметра: Inactive',
+            'Значение: False',
+          ],
+          importanceLevel: 'Info',
+          message: 'User was created',
+          section: 'User',
+          operObjectType: 'Пользователь',
+          operObjectlink: `/admin/users/edit/${userGuid}`,
+          operObjectName: data.user_uno.username,
+          operObjectAddress: userGuid || '',
+          operSubjectName: getMainUser().username,
+          operSubjectLink: '/admin/users/edit/',
+          operSubjectAddress: '',
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
     });
   });
@@ -272,38 +257,22 @@ test.describe('Действия с пользователем', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог удаления пользователя', async () => {
-        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Событие
-        await expect(logRow.nth(0)).toHaveText('UserDeleted');
-        // Время
-        expect(
-          Math.abs(userDeletionDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
-        ).toBeLessThanOrEqual(1);
-        // Параметры
-        await expect(logRow.nth(2)).toBeEmpty();
-        // Адрес пользователя
-        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
-        // Имя сервера
-        await expect(logRow.nth(4)).not.toBeEmpty();
-        // Уровень важности
-        await expect(logRow.nth(5)).toHaveText('Info');
-        // Сообщение
-        await expect(logRow.nth(6)).toHaveText('User was deleted');
-        // Раздел
-        await expect(logRow.nth(7)).toHaveText('User');
-        // Oбъект операции
-        await expect(logRow.nth(8)).toHaveText(`Пользователь: ${data.user_uno.username}`);
-        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/users/edit/${userGuid}"]`)).toHaveText(
-          data.user_uno.username
-        );
-        // Адрес объекта операции
-        await expect(logRow.nth(9)).toHaveText(userGuid + '');
-        // Субъект операции
-        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
-        // Адрес субъекта операции
-        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
-        // Результат операции
-        await expect(logRow.nth(12)).toHaveText('Success');
+        const userDeleteLogInfo: LogInfo = {
+          event: 'UserDeleted',
+          time: userDeletionDate,
+          options: [],
+          importanceLevel: 'Info',
+          message: 'User was deleted',
+          section: 'User',
+          operObjectType: 'Пользователь',
+          operObjectlink: `/admin/users/edit/${userGuid}`,
+          operObjectName: data.user_uno.username,
+          operObjectAddress: userGuid || '',
+          operSubjectName: getMainUser().username,
+          operSubjectLink: '/admin/users/edit/',
+          operSubjectAddress: '',
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
     });
   });

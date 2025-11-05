@@ -1,3 +1,4 @@
+import { LogInfo } from '../../pages/adminPages/page.logs';
 import { userFilterMapping } from '../../pages/page.common';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
@@ -168,51 +169,33 @@ test.describe('Действия с правилами распределения
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог создания правила', async () => {
-        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Событие
-        await expect(logRow.nth(0)).toHaveText('LicenseRuleCreated');
-        // Время
-        expect(
-          Math.abs(
-            licenseRuleCreationDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second')
-          )
-        ).toBeLessThanOrEqual(1);
-        // Параметры
-        await expect(logRow.nth(2).locator('ul li')).toHaveText([
-          'Имя параметра: Name',
-          `Значение: ${data.license_rule_uno.name}`,
-          'Имя параметра: Description',
-          `Значение: ${data.license_rule_uno.description}`,
-          'Имя параметра: Enable',
-          `Значение: ${data.license_rule_uno.enabled ? 'True' : 'False'}`,
-          'Имя параметра: LicenseType',
-          `Значение: ${data.license_rule_uno.license_type}`,
-          'Имя параметра: ApplyToNewUserOnly',
-          `Значение: ${data.license_rule_uno.new_user_apply ? 'True' : 'False'}`,
-        ]);
-        // Адрес пользователя
-        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
-        // Имя сервера
-        await expect(logRow.nth(4)).not.toBeEmpty();
-        // Уровень важности
-        await expect(logRow.nth(5)).toHaveText('Info');
-        // Сообщение
-        await expect(logRow.nth(6)).toHaveText('New license rule was created');
-        // Раздел
-        await expect(logRow.nth(7)).toHaveText('LicenseRule');
-        // Oбъект операции
-        await expect(logRow.nth(8)).toHaveText(`Распределение лицензий: ${data.license_rule_uno.name}`);
-        await expect(logRow.nth(8).locator(`ul li a[href="/admin/license-rules/${licenseRuleId}"]`)).toHaveText(
-          data.license_rule_uno.name
-        );
-        // Адрес объекта операции
-        await expect(logRow.nth(9)).toHaveText(licenseRuleId + '');
-        // Субъект операции
-        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
-        // Адрес субъекта операции
-        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
-        // Результат операции
-        await expect(logRow.nth(12)).toHaveText('Success');
+        const userDeleteLogInfo: LogInfo = {
+          event: 'LicenseRuleCreated',
+          time: licenseRuleCreationDate,
+          options: [
+            'Имя параметра: Name',
+            `Значение: ${data.license_rule_uno.name}`,
+            'Имя параметра: Description',
+            `Значение: ${data.license_rule_uno.description}`,
+            'Имя параметра: Enable',
+            `Значение: ${data.license_rule_uno.enabled ? 'True' : 'False'}`,
+            'Имя параметра: LicenseType',
+            `Значение: ${data.license_rule_uno.license_type}`,
+            'Имя параметра: ApplyToNewUserOnly',
+            `Значение: ${data.license_rule_uno.new_user_apply ? 'True' : 'False'}`,
+          ],
+          importanceLevel: 'Info',
+          message: 'New license rule was created',
+          section: 'LicenseRule',
+          operObjectType: 'Распределение лицензий',
+          operObjectlink: `/admin/license-rules/${licenseRuleId}`,
+          operObjectName: data.license_rule_uno.name,
+          operObjectAddress: licenseRuleId || '',
+          operSubjectName: getMainUser().username,
+          operSubjectLink: '/admin/users/edit/',
+          operSubjectAddress: '',
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
     });
   });
@@ -330,43 +313,22 @@ test.describe('Действия с правилами распределения
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог удаления распределения лицензий', async () => {
-        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Событие
-        await expect(logRow.nth(0)).toHaveText('LicenseRuleDeleted');
-        // Время
-        expect(
-          Math.abs(
-            licenseRuleDeletionDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second')
-          )
-        ).toBeLessThanOrEqual(4);
-        // Параметры
-        await expect(logRow.nth(2).locator('ul li')).toHaveText([
-          'Имя параметра: Name',
-          `Значение: ${data.license_rule_uno.name}`,
-        ]);
-        // Адрес пользователя
-        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
-        // Имя сервера
-        await expect(logRow.nth(4)).not.toBeEmpty();
-        // Уровень важности
-        await expect(logRow.nth(5)).toHaveText('Warn');
-        // Сообщение
-        await expect(logRow.nth(6)).toHaveText('Deleted');
-        // Раздел
-        await expect(logRow.nth(7)).toHaveText('LicenseRule');
-        // Oбъект операции
-        await expect(logRow.nth(8)).toHaveText(`Распределение лицензий: ${data.license_rule_uno.name}`);
-        await expect(logRow.nth(8).locator(`ul li a[href="/admin/license-rules/${licenseRuleId}"]`)).toHaveText(
-          data.license_rule_uno.name
-        );
-        // Адрес объекта операции
-        await expect(logRow.nth(9)).toHaveText(licenseRuleId + '');
-        // Субъект операции
-        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
-        // Адрес субъекта операции
-        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
-        // Результат операции
-        await expect(logRow.nth(12)).toHaveText('Success');
+        const userDeleteLogInfo: LogInfo = {
+          event: 'LicenseRuleDeleted',
+          time: licenseRuleDeletionDate,
+          options: ['Имя параметра: Name', `Значение: ${data.license_rule_uno.name}`],
+          importanceLevel: 'Warn',
+          message: 'Deleted',
+          section: 'LicenseRule',
+          operObjectType: 'Распределение лицензий',
+          operObjectlink: `/admin/license-rules/${licenseRuleId}`,
+          operObjectName: data.license_rule_uno.name,
+          operObjectAddress: licenseRuleId || '',
+          operSubjectName: getMainUser().username,
+          operSubjectLink: '/admin/users/edit/',
+          operSubjectAddress: '',
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
     });
   });

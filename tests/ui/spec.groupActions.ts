@@ -1,5 +1,6 @@
 import { rewriteData } from '../../data/data.common';
 import GroupsTD from '../../data/data.groups';
+import { LogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
@@ -115,38 +116,22 @@ test.describe('Действия с группами', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог создания группы', async () => {
-        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Событие
-        await expect(logRow.nth(0)).toHaveText('GroupCreated');
-        // Время
-        expect(
-          Math.abs(groupCreationDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
-        ).toBeLessThanOrEqual(1);
-        // Параметры
-        await expect(logRow.nth(2)).toBeEmpty();
-        // Адрес пользователя
-        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
-        // Имя сервера
-        await expect(logRow.nth(4)).not.toBeEmpty();
-        // Уровень важности
-        await expect(logRow.nth(5)).toHaveText('Info');
-        // Сообщение
-        await expect(logRow.nth(6)).toHaveText('User group was created');
-        // Раздел
-        await expect(logRow.nth(7)).toHaveText('UserGroup');
-        // Oбъект операции
-        await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${data.group_uno.name}`);
-        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/groups/edit/${groupId}"]`)).toHaveText(
-          data.group_uno.name
-        );
-        // Адрес объекта операции
-        await expect(logRow.nth(9)).toHaveText(groupId + '');
-        // Субъект операции
-        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
-        // Адрес субъекта операции
-        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
-        // Результат операции
-        await expect(logRow.nth(12)).toHaveText('Success');
+        const userDeleteLogInfo: LogInfo = {
+          event: 'GroupCreated',
+          time: groupCreationDate,
+          options: [],
+          importanceLevel: 'Info',
+          message: 'User group was created',
+          section: 'UserGroup',
+          operObjectType: 'Группа пользователей',
+          operObjectlink: `/admin/groups/edit/${groupId}`,
+          operObjectName: data.group_uno.name,
+          operObjectAddress: groupId || '',
+          operSubjectName: getMainUser().username,
+          operSubjectLink: '/admin/users/edit/',
+          operSubjectAddress: '',
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
     });
   });
@@ -261,43 +246,29 @@ test.describe('Действия с группами', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог изменения группы', async () => {
-        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Событие
-        await expect(logRow.nth(0)).toHaveText('GroupEdited');
-        // Время
-        expect(
-          Math.abs(groupUpdationDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
-        ).toBeLessThanOrEqual(5);
-        // Параметры
-        await expect(logRow.nth(2).locator('ul li')).toHaveText([
-          'Имя параметра: Name',
-          `Старое значение: ${oldGroup.name}`,
-          `Новое значение: ${newGroup.name}`,
-          'Имя параметра: Description',
-          `Старое значение: ${oldGroup.description}`,
-          `Новое значение: ${newGroup.description}`,
-        ]);
-        // Адрес пользователя
-        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
-        // Имя сервера
-        await expect(logRow.nth(4)).not.toBeEmpty();
-        // Уровень важности
-        await expect(logRow.nth(5)).toHaveText('Info');
-        // Сообщение
-        await expect(logRow.nth(6)).toHaveText('User group was updated');
-        // Раздел
-        await expect(logRow.nth(7)).toHaveText('UserGroup');
-        // Oбъект операции
-        await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${newGroup.name}`);
-        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/groups/edit/${groupId}"]`)).toHaveText(newGroup.name);
-        // Адрес объекта операции
-        await expect(logRow.nth(9)).toHaveText(groupId + '');
-        // Субъект операции
-        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
-        // Адрес субъекта операции
-        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
-        // Результат операции
-        await expect(logRow.nth(12)).toHaveText('Success');
+        const userDeleteLogInfo: LogInfo = {
+          event: 'GroupEdited',
+          time: groupUpdationDate,
+          options: [
+            'Имя параметра: Name',
+            `Старое значение: ${oldGroup.name}`,
+            `Новое значение: ${newGroup.name}`,
+            'Имя параметра: Description',
+            `Старое значение: ${oldGroup.description}`,
+            `Новое значение: ${newGroup.description}`,
+          ],
+          importanceLevel: 'Info',
+          message: 'User group was updated',
+          section: 'UserGroup',
+          operObjectType: 'Группа пользователей',
+          operObjectlink: `/admin/groups/edit/${groupId}`,
+          operObjectName: newGroup.name,
+          operObjectAddress: groupId || '',
+          operSubjectName: getMainUser().username,
+          operSubjectLink: '/admin/users/edit/',
+          operSubjectAddress: '',
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
     });
   });
@@ -389,41 +360,22 @@ test.describe('Действия с группами', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог удаления группы', async () => {
-        const logRow = logsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Событие
-        await expect(logRow.nth(0)).toHaveText('GroupDeleted');
-        // Время
-        expect(
-          Math.abs(groupDeletionDate.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
-        ).toBeLessThanOrEqual(4);
-        // Параметры
-        await expect(logRow.nth(2).locator('ul li')).toHaveText([
-          'Имя параметра: Name',
-          `Значение: ${data.group_uno.name}`,
-        ]);
-        // Адрес пользователя
-        expect(await logRow.nth(3).textContent()).toMatch(helper.regexMasks.ipv4);
-        // Имя сервера
-        await expect(logRow.nth(4)).not.toBeEmpty();
-        // Уровень важности
-        await expect(logRow.nth(5)).toHaveText('Info');
-        // Сообщение
-        await expect(logRow.nth(6)).toBeEmpty();
-        // Раздел
-        await expect(logRow.nth(7)).toHaveText('UserGroup');
-        // Oбъект операции
-        await expect(logRow.nth(8)).toHaveText(`Группа пользователей: ${data.group_uno.name}`);
-        await expect(logRow.nth(8).locator(`ul li a[href*="/admin/groups/edit/${groupId}"]`)).toHaveText(
-          data.group_uno.name
-        );
-        // Адрес объекта операции
-        await expect(logRow.nth(9)).toHaveText(groupId + '');
-        // Субъект операции
-        await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
-        // Адрес субъекта операции
-        expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
-        // Результат операции
-        await expect(logRow.nth(12)).toHaveText('Success');
+        const userDeleteLogInfo: LogInfo = {
+          event: 'GroupDeleted',
+          time: groupDeletionDate,
+          options: ['Имя параметра: Name', `Значение: ${data.group_uno.name}`],
+          importanceLevel: 'Info',
+          message: '',
+          section: 'UserGroup',
+          operObjectType: 'Группа пользователей',
+          operObjectlink: `/admin/groups/edit/${groupId}`,
+          operObjectName: data.group_uno.name,
+          operObjectAddress: groupId || '',
+          operSubjectName: getMainUser().username,
+          operSubjectLink: '/admin/users/edit/',
+          operSubjectAddress: '',
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
     });
   });
