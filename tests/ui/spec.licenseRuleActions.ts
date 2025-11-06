@@ -397,8 +397,8 @@ test.describe('Действия с правилами распределения
           if (newLR.new_user_apply !== oldLR.new_user_apply) {
             options.push(
               'Имя параметра: ApplyToNewUserOnly',
-              `Старое значение: ${oldLR.new_user_apply}`,
-              `Новое значение: ${newLR.new_user_apply}`
+              `Старое значение: ${Helper.capitalize(oldLR.new_user_apply + '')}`,
+              `Новое значение: ${Helper.capitalize(newLR.new_user_apply + '')}`
             );
           }
           return options;
