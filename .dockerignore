@@ -1,0 +1,8 @@
+.env
+.git
+.github
+.prettierrc
+.temp
+README.md
+node_modules
+test-results

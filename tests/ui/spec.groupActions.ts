@@ -7,7 +7,6 @@ import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 import dayjs, { Dayjs } from 'dayjs';
-import Helper from '../../utils/helper';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
@@ -164,7 +163,7 @@ test.describe('Действия с группами', async () => {
   12. Проверить поле “Параметры”
   – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.5. Редактирование группы', async ({ page, commonPage, groupsPage, logsPage, helper, data }) => {
+  test('6.1.5. Редактирование группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
     const oldGroup = data.group_uno;
     const newGroup = await GroupsTD.createGroup();
     let groupUpdationDate: Dayjs;

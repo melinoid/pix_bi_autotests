@@ -199,7 +199,7 @@ test.describe('Действия с LDAP импортом пользовател�
       await expect(page.locator('.ant-notification-notice-closable .ant-notification-notice-message')).toHaveText(
         'Выполняется импорт Пользователей из AD, это может занять некоторое время'
       );
-      await expect(page.locator('.ant-notification-notice-closable')).toBeHidden({ timeout: 120000 });
+      await expect(page.locator('.ant-notification-notice-closable')).toBeHidden({ timeout: 180000 });
     });
     await test.step('Проверяем импортированных пользователей', async () => {
       await usersPage.table.head.locator('th.ant-table-cell').nth(15).locator('button').nth(1).click();

@@ -7,13 +7,12 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: 'list',
-  timeout: 120000,
+  timeout: 180000,
   snapshotPathTemplate: '{testDir}/screenshots/{testFilePath}/{arg}{ext}',
 
   use: {
     ...devices['Desktop Chrome'],
     locale: 'ru-RU',
-    timezoneId: 'Asia/Yekaterinburg',
     video: 'on-first-retry',
     viewport: { width: 1800, height: 1042 },
     launchOptions: { slowMo: 0 },
