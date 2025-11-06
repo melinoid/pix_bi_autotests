@@ -2,6 +2,7 @@ import { expect, Locator, type Page } from '@playwright/test';
 import { Components } from '../components';
 import dayjs, { Dayjs } from 'dayjs';
 import Helper from '../../utils/helper';
+import { getMainUser } from '../../utils/config';
 
 export interface LogInfo {
   event: string;
@@ -16,9 +17,8 @@ export interface LogInfo {
   operObjectlink: string;
   operObjectName: string;
   operObjectAddress: string;
-  operSubjectName: string;
-  operSubjectLink: string;
-  operSubjectAddress: string;
+  operSubjectName?: string;
+  operSubjectAddress?: string;
   result?: string;
 }
 
@@ -83,7 +83,9 @@ export default class LogsPage {
     // Адрес объекта операции
     await expect(logRow.nth(9)).toHaveText(logInfo.operObjectAddress);
     // Субъект операции
-    await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(logInfo.operSubjectName);
+    await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(
+      logInfo.operSubjectName || getMainUser().username
+    );
     // Адрес субъекта операции
     expect(await logRow.nth(11).textContent()).toMatch(this.helper.regexMasks.guid);
     // Результат операции

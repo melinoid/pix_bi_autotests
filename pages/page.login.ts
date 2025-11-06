@@ -49,6 +49,13 @@ export default class LoginPage {
     await expect(this.loginForm.loader).toBeHidden();
     await this.page.waitForLoadState('load');
     await expect(this.commonPage.mainLoader).toBeHidden();
+
+    const expLicWarn = this.page.locator(
+      '.ant-notification-notice:has-text("Срок действия некоторых лицензии") a[aria-label="Close"]'
+    );
+    if (await expLicWarn.isVisible()) {
+      expLicWarn.click();
+    }
   }
 
   async goToAuthorizedPage(path: string, user: { username: string; password: string }) {

@@ -8,6 +8,7 @@ interface MetaData {
 }
 
 export interface LDAP {
+  id?: string;
   name: string;
   description?: string;
   enabled: boolean;
@@ -45,6 +46,7 @@ export interface LDAP {
 }
 
 export interface Group {
+  id?: string;
   name: string;
   description?: string;
   type?: 'local' | 'ldap';
@@ -53,6 +55,7 @@ export interface Group {
 }
 
 export interface User {
+  id?: string;
   username: string;
   password: string;
   first_login_reset_password?: boolean;
@@ -72,6 +75,7 @@ export interface User {
 }
 
 export interface LicenseRule {
+  id?: string;
   name: string;
   description?: string;
   enabled: boolean;

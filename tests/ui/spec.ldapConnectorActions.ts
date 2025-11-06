@@ -137,7 +137,7 @@ test.describe('Действия с LDAP импортом пользовател�
     await test.step('Создаём импорт пользователей ', async () => {
       await usersImportPage.ldapImportPage.createBtn.click();
       ldapConnectorCreationDate = dayjs(); // Временем создания является время отправки запроса
-      await expect(page.locator('.ant-notification-notice-success')).toBeInViewport({ timeout: 30000 });
+      await expect(page.locator('.ant-notification-notice-success')).toBeInViewport({ timeout: 60000 });
       await page.waitForLoadState('load');
       await expect(usersImportPage.table.head).toBeVisible();
     });
@@ -226,6 +226,7 @@ test.describe('Действия с LDAP импортом пользовател�
       await test.step('Ищем событие создания импортa пользователей', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'LDAP connection created' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await logsPage.table.head.locator('th.ant-table-cell').nth(1).locator('[data-testid*=table-filter]').click();
         await page.locator('input[date-range=start]').fill(dayjs(ldapConnectorCreationDate).format('DD.MM.YYYY'));
@@ -233,7 +234,7 @@ test.describe('Действия с LDAP импортом пользовател�
         await page.locator('input[date-range=end]').click();
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         // Получаем порядковый номер строки с логом
         const rowCount = await logsPage.table.body.locator('.ant-table-row').count();
@@ -331,6 +332,7 @@ test.describe('Действия с LDAP импортом пользовател�
       await test.step('Ищем событие импортa пользователей', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'New users imported from AD' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 })
 
         await logsPage.table.head.locator('th.ant-table-cell').nth(1).locator('[data-testid*=table-filter]').click();
         await page.locator('input[date-range=start]').fill(dayjs(ldapConnectorCreationDate).format('DD.MM.YYYY'));
@@ -338,7 +340,7 @@ test.describe('Действия с LDAP импортом пользовател�
         await page.locator('input[date-range=end]').click();
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         // Получаем порядковый номер строки с логом
         const rowCount = await logsPage.table.body.locator('.ant-table-row').count();
@@ -483,6 +485,7 @@ test.describe('Действия с LDAP импортом пользовател�
       await test.step('Ищем событие удаления импортa пользователей', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'LDAP connection deleted' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await logsPage.table.head.locator('th.ant-table-cell').nth(1).locator('[data-testid*=table-filter]').click();
         await page.locator('input[date-range=start]').fill(dayjs(ldapConnectorDeletionDate).format('DD.MM.YYYY'));
@@ -490,7 +493,7 @@ test.describe('Действия с LDAP импортом пользовател�
         await page.locator('input[date-range=end]').click();
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         // Получаем порядковый номер строки с логом
         const rowCount = await logsPage.table.body.locator('.ant-table-row').count();

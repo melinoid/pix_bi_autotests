@@ -32,6 +32,7 @@ test('6.5.13. Выход из системы', async ({ page, loginPage, mainPag
     await expect(mainPage.pageTitle).toHaveText(`${helloText}, ${getMainUser().username}`);
   });
   await test.step('Выходим из системы', async () => {
+    await page.waitForTimeout(500);
     await commonPage.sideMenu.logoutBtn.click();
     await commonPage.sideMenu.logoutConfirmBtn.click();
   });

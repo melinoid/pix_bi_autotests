@@ -1,3 +1,4 @@
+import { Group } from '../../data/data';
 import { rewriteData } from '../../data/data.common';
 import GroupsTD from '../../data/data.groups';
 import { LogInfo } from '../../pages/adminPages/page.logs';
@@ -6,6 +7,7 @@ import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 import dayjs, { Dayjs } from 'dayjs';
+import Helper from '../../utils/helper';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
@@ -47,16 +49,16 @@ test.describe('Действия с группами', async () => {
   9. Проверить поле “Параметры”
   – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.4. Создание группы', async ({ page, commonPage, groupsPage, logsPage, helper, data }) => {
+  test('6.1.4. Создание группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
+    let group: Group = data.group_uno;
     let groupCreationDate: Dayjs;
-    let groupId: string | null;
 
     await test.step('Переходим к созданию группы', async () => {
       await groupsPage.createGroupBtn.click();
     });
     await test.step('Заполняем форму группы', async () => {
-      await groupsPage.groupPage.nameField.input.fill(data.group_uno.name);
-      await groupsPage.groupPage.descriptionField.input.fill(data.group_uno.description);
+      await groupsPage.groupPage.nameField.input.fill(group.name);
+      await groupsPage.groupPage.descriptionField.input.fill(`${group.description}`);
     });
     await test.step('Создаём группу', async () => {
       await groupsPage.groupPage.createBtn.click();
@@ -68,7 +70,7 @@ test.describe('Действия с группами', async () => {
     await test.step('Ищем созданную группу', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
-      await commonPage.searchField.input.fill(data.group_uno.name);
+      await commonPage.searchField.input.fill(group.name);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -76,9 +78,9 @@ test.describe('Действия с группами', async () => {
     await test.step('Проверяем созданную группу', async () => {
       const groupRow = groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
       // Название
-      await expect(groupRow.nth(0)).toHaveText(data.group_uno.name);
+      await expect(groupRow.nth(0)).toHaveText(group.name);
       // Описание
-      await expect(groupRow.nth(1)).toHaveText(data.group_uno.description);
+      await expect(groupRow.nth(1)).toHaveText(`${group.description}`);
       // Тип
       await expect(groupRow.nth(2)).toHaveText('Локальная группа');
       // Источник
@@ -89,7 +91,9 @@ test.describe('Действия с группами', async () => {
 
       // Вытягиваем ID созданной группы из ссылки
       await groupRow.locator('button').nth(0).click();
-      groupId = page.url().split('/edit/')[1];
+      group.id = page.url().split('/edit/')[1];
+      // Записываем id группы для дальнейших тестов
+      rewriteData('group_uno', group);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -103,15 +107,13 @@ test.describe('Действия с группами', async () => {
       await test.step('Ищем событие создания группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group created (local)' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
-        await page
-          .locator('input[data-testid*=table-search-input]')
-          .last()
-          .fill(groupId + '');
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${group.id}`);
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
@@ -124,12 +126,9 @@ test.describe('Действия с группами', async () => {
           message: 'User group was created',
           section: 'UserGroup',
           operObjectType: 'Группа пользователей',
-          operObjectlink: `/admin/groups/edit/${groupId}`,
-          operObjectName: data.group_uno.name,
-          operObjectAddress: groupId || '',
-          operSubjectName: getMainUser().username,
-          operSubjectLink: '/admin/users/edit/',
-          operSubjectAddress: '',
+          operObjectlink: `/admin/groups/edit/${group.id}`,
+          operObjectName: group.name,
+          operObjectAddress: `${group.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
@@ -169,7 +168,6 @@ test.describe('Действия с группами', async () => {
     const oldGroup = data.group_uno;
     const newGroup = await GroupsTD.createGroup();
     let groupUpdationDate: Dayjs;
-    let groupId: string | null;
 
     await test.step('Ищем подходящую группу', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
@@ -181,8 +179,6 @@ test.describe('Действия с группами', async () => {
     });
     await test.step('Переходим к редактированию группы', async () => {
       await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();
-      // Вытягиваем ID созданной группы из ссылки
-      groupId = page.url().split('/edit/')[1];
     });
     await test.step('Заполняем форму группы', async () => {
       await groupsPage.groupPage.nameField.input.clear();
@@ -205,6 +201,7 @@ test.describe('Действия с группами', async () => {
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       // Записываем изменённую группу
+      newGroup.id = oldGroup.id;
       rewriteData('group_uno', newGroup);
     });
     await test.step('Проверяем изменённую группу', async () => {
@@ -233,40 +230,43 @@ test.describe('Действия с группами', async () => {
       await test.step('Ищем событие изменения группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group edited (local)' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
-        await page
-          .locator('input[data-testid*=table-search-input]')
-          .last()
-          .fill(groupId + '');
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${oldGroup.id}`);
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог изменения группы', async () => {
+        const updOptions = function (newG: Group, oldG: Group) {
+          let options = [];
+          if (newG.name !== oldG.name) {
+            options.push('Имя параметра: Name', `Старое значение: ${oldG.name}`, `Новое значение: ${newG.name}`);
+          }
+          if (newG.description !== oldG.description) {
+            options.push(
+              'Имя параметра: Description',
+              `Старое значение: ${oldG.description}`,
+              `Новое значение: ${newG.description}`
+            );
+          }
+          return options;
+        };
+
         const userDeleteLogInfo: LogInfo = {
           event: 'GroupEdited',
           time: groupUpdationDate,
-          options: [
-            'Имя параметра: Name',
-            `Старое значение: ${oldGroup.name}`,
-            `Новое значение: ${newGroup.name}`,
-            'Имя параметра: Description',
-            `Старое значение: ${oldGroup.description}`,
-            `Новое значение: ${newGroup.description}`,
-          ],
+          options: updOptions(newGroup, oldGroup),
           importanceLevel: 'Info',
           message: 'User group was updated',
           section: 'UserGroup',
           operObjectType: 'Группа пользователей',
-          operObjectlink: `/admin/groups/edit/${groupId}`,
+          operObjectlink: `/admin/groups/edit/${oldGroup.id}`,
           operObjectName: newGroup.name,
-          operObjectAddress: groupId || '',
-          operSubjectName: getMainUser().username,
-          operSubjectLink: '/admin/users/edit/',
-          operSubjectAddress: '',
+          operObjectAddress: `${oldGroup.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
@@ -297,31 +297,31 @@ test.describe('Действия с группами', async () => {
   - В поле указаны корректные параметры созданного/отредактированного ресурса
   */
 
-  test('6.1.6. Удаление группы', async ({ page, commonPage, groupsPage, logsPage, helper, data }) => {
-    let groupId: string | null;
+  test('6.1.6. Удаление группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
+    const group: Group = data.group_uno;
     let groupDeletionDate: Dayjs;
 
     await test.step('Ищем созданную группу', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
-      await commonPage.searchField.input.fill(data.group_uno.name);
+      await commonPage.searchField.input.fill(group.name);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       // Вытягиваем ID созданной группы из ссылки
       await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();
-      groupId = page.url().split('/edit/')[1];
+      group.id = page.url().split('/edit/')[1];
       await commonPage.adminLinksMenu.groupsLink.click();
     });
     await test.step('Удаляем группу', async () => {
       await expect(groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
-        data.group_uno.name
+        group.name
       );
       await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(1).click();
 
       await test.step('Проверяем модальное окно удаления группы', async () => {
         await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
-          `Вы уверены что хотите удалить группу "${data.group_uno.name}"?`
+          `Вы уверены что хотите удалить группу "${group.name}"?`
         );
         await expect(page.locator('.ant-modal-content .ant-modal-body .ant-typography')).toHaveText(
           'Это действие нельзя отменить.'
@@ -347,15 +347,16 @@ test.describe('Действия с группами', async () => {
       await test.step('Ищем событие удаления группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group deleted (local)' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page
           .locator('input[data-testid*=table-search-input]')
           .last()
-          .fill(groupId + '');
+          .fill(group.id + '');
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
@@ -363,17 +364,14 @@ test.describe('Действия с группами', async () => {
         const userDeleteLogInfo: LogInfo = {
           event: 'GroupDeleted',
           time: groupDeletionDate,
-          options: ['Имя параметра: Name', `Значение: ${data.group_uno.name}`],
+          options: ['Имя параметра: Name', `Значение: ${group.name}`],
           importanceLevel: 'Info',
           message: '',
           section: 'UserGroup',
           operObjectType: 'Группа пользователей',
-          operObjectlink: `/admin/groups/edit/${groupId}`,
-          operObjectName: data.group_uno.name,
-          operObjectAddress: groupId || '',
-          operSubjectName: getMainUser().username,
-          operSubjectLink: '/admin/users/edit/',
-          operSubjectAddress: '',
+          operObjectlink: `/admin/groups/edit/${group.id}`,
+          operObjectName: group.name,
+          operObjectAddress: `${group.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });

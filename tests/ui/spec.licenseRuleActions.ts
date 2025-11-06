@@ -1,3 +1,6 @@
+import { LicenseRule } from '../../data/data';
+import { rewriteData } from '../../data/data.common';
+import LicenseRulesTD from '../../data/data.licenseRules';
 import { LogInfo } from '../../pages/adminPages/page.logs';
 import { userFilterMapping } from '../../pages/page.common';
 import { getMainUser } from '../../utils/config';
@@ -5,6 +8,7 @@ import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 import dayjs, { Dayjs } from 'dayjs';
+import Helper from '../../utils/helper';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
@@ -54,34 +58,27 @@ test.describe('Действия с правилами распределения
   – В колонке “Объект операции” указано созданное правило
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('6.2.1. Создание распределения лицензий', async ({
-    page,
-    commonPage,
-    licenseRulesPage,
-    logsPage,
-    helper,
-    data,
-  }) => {
+  test('6.2.1. Создание распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage, data }) => {
+    let licenseRule: LicenseRule = data.license_rule_uno;
     let licenseRuleCreationDate: Dayjs;
-    let licenseRuleId: string | null;
 
     await test.step('Переходим к созданию правила распределения', async () => {
       await licenseRulesPage.createRuleBtn.click();
     });
     await test.step('Заполняем форму правила распределения', async () => {
-      await licenseRulesPage.rulePage.nameField.input.fill(data.license_rule_uno.name);
-      await licenseRulesPage.rulePage.descriptionField.textarea.fill(data.license_rule_uno.description);
-      if (!data.license_rule_uno.enabled) {
+      await licenseRulesPage.rulePage.nameField.input.fill(licenseRule.name);
+      await licenseRulesPage.rulePage.descriptionField.textarea.fill(`${licenseRule.description}`);
+      if (!licenseRule.enabled) {
         await licenseRulesPage.rulePage.enabledCheckbox.checkbox.click();
       }
-      if (!data.license_rule_uno.new_user_apply) {
+      if (!licenseRule.new_user_apply) {
         await licenseRulesPage.rulePage.newUserApplyCheckbox.checkbox.click();
       }
       await licenseRulesPage.rulePage.licenseTypeField.input.click();
       await licenseRulesPage.rulePage.licenseTypeField.dropdown
-        .locator(`:text-is("${data.license_rule_uno.license_type}")`)
+        .locator(`:text-is("${licenseRule.license_type}")`)
         .click();
-      await commonPage.fillUserFilter(data.license_rule_uno.user_filter);
+      await commonPage.fillUserFilter(licenseRule.user_filter);
     });
     await test.step('Создаём правило распределения ', async () => {
       await licenseRulesPage.rulePage.createBtn.click();
@@ -93,7 +90,7 @@ test.describe('Действия с правилами распределения
     await test.step('Ищем созданное правило', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
-      await commonPage.searchField.input.fill(data.license_rule_uno.name);
+      await commonPage.searchField.input.fill(licenseRule.name);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -101,15 +98,15 @@ test.describe('Действия с правилами распределения
     await test.step('Проверяем созданное правило', async () => {
       const licenseRuleRow = licenseRulesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
       // Название
-      await expect(licenseRuleRow.nth(0)).toHaveText(data.license_rule_uno.name);
+      await expect(licenseRuleRow.nth(0)).toHaveText(licenseRule.name);
       // Описание
-      await expect(licenseRuleRow.nth(1)).toHaveText(data.license_rule_uno.description);
+      await expect(licenseRuleRow.nth(1)).toHaveText(`${licenseRule.description}`);
       // Включена
-      await expect(licenseRuleRow.nth(2)).toHaveText(data.license_rule_uno.enabled ? 'Да' : 'Нет');
+      await expect(licenseRuleRow.nth(2)).toHaveText(licenseRule.enabled ? 'Да' : 'Нет');
       // Применять только к новым пользователям
-      await expect(licenseRuleRow.nth(3)).toHaveText(data.license_rule_uno.new_user_apply ? 'Да' : 'Нет');
+      await expect(licenseRuleRow.nth(3)).toHaveText(licenseRule.new_user_apply ? 'Да' : 'Нет');
       // Тип лицензии
-      await expect(licenseRuleRow.nth(4)).toHaveText(data.license_rule_uno.license_type);
+      await expect(licenseRuleRow.nth(4)).toHaveText(licenseRule.license_type);
       // Фильтр пользователей
       const filterText = function (filter: string[][]) {
         let localeFilter: string[] = [];
@@ -126,7 +123,7 @@ test.describe('Действия с правилами распределения
         }
         return localeFilter;
       };
-      await expect(licenseRuleRow.nth(5).locator('ul li')).toHaveText(filterText(data.license_rule_uno.user_filter));
+      await expect(licenseRuleRow.nth(5).locator('ul li')).toHaveText(filterText(licenseRule.user_filter));
       // Дата создания
       expect(
         Math.abs(
@@ -142,7 +139,9 @@ test.describe('Действия с правилами распределения
 
       // Вытягиваем ID созданного правила из ссылки
       await licenseRuleRow.locator('button').nth(0).click();
-      licenseRuleId = page.url().split('/license-rules/')[1];
+      licenseRule.id = page.url().split('/license-rules/')[1];
+      // Записываем id правила для дальнейших тестов
+      rewriteData('license_rule_uno', licenseRule);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -156,15 +155,13 @@ test.describe('Действия с правилами распределения
       await test.step('Ищем событие создания правила', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'License rule created' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
-        await page
-          .locator('input[data-testid*=table-search-input]')
-          .last()
-          .fill(licenseRuleId + '');
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${licenseRule.id}`);
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
@@ -174,26 +171,250 @@ test.describe('Действия с правилами распределения
           time: licenseRuleCreationDate,
           options: [
             'Имя параметра: Name',
-            `Значение: ${data.license_rule_uno.name}`,
+            `Значение: ${licenseRule.name}`,
             'Имя параметра: Description',
-            `Значение: ${data.license_rule_uno.description}`,
+            `Значение: ${licenseRule.description}`,
             'Имя параметра: Enable',
-            `Значение: ${data.license_rule_uno.enabled ? 'True' : 'False'}`,
+            `Значение: ${licenseRule.enabled ? 'True' : 'False'}`,
             'Имя параметра: LicenseType',
-            `Значение: ${data.license_rule_uno.license_type}`,
+            `Значение: ${licenseRule.license_type}`,
             'Имя параметра: ApplyToNewUserOnly',
-            `Значение: ${data.license_rule_uno.new_user_apply ? 'True' : 'False'}`,
+            `Значение: ${licenseRule.new_user_apply ? 'True' : 'False'}`,
           ],
           importanceLevel: 'Info',
           message: 'New license rule was created',
           section: 'LicenseRule',
           operObjectType: 'Распределение лицензий',
-          operObjectlink: `/admin/license-rules/${licenseRuleId}`,
+          operObjectlink: `/admin/license-rules/${licenseRule.id}`,
           operObjectName: data.license_rule_uno.name,
-          operObjectAddress: licenseRuleId || '',
-          operSubjectName: getMainUser().username,
-          operSubjectLink: '/admin/users/edit/',
-          operSubjectAddress: '',
+          operObjectAddress: `${licenseRule.id}`,
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+      });
+    });
+  });
+
+  /* Create: 05.11.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13084
+
+  1. Открыть подраздел “Распределение лицензий”
+  – Подраздел открыт
+  2. Нажать на иконку лупы в правом верхнем углу
+  – Открыто поле поиска
+  3. Заполнить поле тестовым названием
+  – Поле заполнено
+  – В списке доступно искомое правило
+  4. Проскролить строку тестового правила вправо
+  – Доступны иконки “Редактирования” и “Удаления”
+  5. Нажать на иконку редактирования (карандаш)
+  – Открыта страница “Настройка правила распределения лицензий”
+  6. Внести изменения
+  – Изменения внесены
+  7. Нажать "Создать"
+  – Отображается уведомление: “Правило успешно обновлено”
+  – Открыт подраздел “Распределение лицензий”
+  8. Перейти в подраздел “Журнал событий”
+  – Открыт “Журнал событий”
+  9. Перейти на вкладку “События Информационной Безопасности”
+  – Отображаются События Информационной Безопасности
+  10. Проверить запись "LicenseRule Edited"
+  – Присутствует запись об изменении правила распределения лицензий
+  – В колонке “Объект операции” указано измененное правило
+  – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка
+  11. Проверить ссылки на ресурсы в полях “Объект операции” и “Субьект операции”
+  – Ссылки кликабельны
+  – Ссылки ведут на корректные ресурсы
+  12. Проверить поле “Параметры”
+  – В поле указаны корректные параметры созданного/отредактированного ресурса */
+
+  test('6.2.2. Редактирование распределения лицензий', async ({
+    page,
+    commonPage,
+    licenseRulesPage,
+    logsPage,
+    data,
+  }) => {
+    const oldLicenseRule: LicenseRule = data.license_rule_uno;
+    const newLicenseRule = await LicenseRulesTD.createRule();
+    let licenseRuleUpdationDate: Dayjs;
+
+    await test.step('Ищем подходящую группу', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.openBtn.click();
+      await commonPage.searchField.input.fill(oldLicenseRule.name);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+    });
+    await test.step('Переходим к изменению правила распределения', async () => {
+      await licenseRulesPage.table.body
+        .locator('tr.ant-table-row')
+        .nth(0)
+        .locator('td')
+        .locator('button')
+        .nth(0)
+        .click();
+    });
+    await test.step('Заполняем форму правила распределения', async () => {
+      await licenseRulesPage.rulePage.nameField.input.fill(newLicenseRule.name);
+      await licenseRulesPage.rulePage.descriptionField.textarea.fill(
+        newLicenseRule.description || 'Description undefined'
+      );
+
+      const eChecked = await licenseRulesPage.rulePage.enabledCheckbox.checkbox.isChecked();
+      if ((!eChecked && newLicenseRule.enabled) || (eChecked && !newLicenseRule.enabled)) {
+        await licenseRulesPage.rulePage.enabledCheckbox.checkbox.click();
+      }
+
+      const nuaChecked = await licenseRulesPage.rulePage.newUserApplyCheckbox.checkbox.isChecked();
+      if ((!nuaChecked && newLicenseRule.new_user_apply) || (nuaChecked && !newLicenseRule.new_user_apply)) {
+        await licenseRulesPage.rulePage.newUserApplyCheckbox.checkbox.click();
+      }
+
+      await licenseRulesPage.rulePage.licenseTypeField.input.click();
+      await licenseRulesPage.rulePage.licenseTypeField.dropdown
+        .locator(`:text-is("${newLicenseRule.license_type}")`)
+        .click();
+
+      // Очищаем фильтр пользователей
+      const oldFilerCount = await page.locator('.ant-col-1 .anticon-close').count();
+      for (let i = 0; i < oldFilerCount; i++) {
+        await page.locator('.ant-col-1 .anticon-close').click();
+      }
+      // Заполняем новый фильтр
+      await commonPage.fillUserFilter(newLicenseRule.user_filter);
+    });
+    await test.step('Сохраняем изменения правила распределения ', async () => {
+      await licenseRulesPage.rulePage.createBtn.click();
+      licenseRuleUpdationDate = dayjs(); // Временем изменения является время отправки запроса
+      await expect(licenseRulesPage.rulePage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await page.waitForLoadState('load');
+      await expect(licenseRulesPage.table.head).toBeVisible();
+    });
+    await test.step('Ищем изменённое правило', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.input.clear();
+      await commonPage.searchField.input.fill(newLicenseRule.name);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+    });
+    await test.step('Проверяем изменённое правило', async () => {
+      const licenseRuleRow = licenseRulesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+      // Название
+      await expect(licenseRuleRow.nth(0)).toHaveText(newLicenseRule.name);
+      // Описание
+      await expect(licenseRuleRow.nth(1)).toHaveText(newLicenseRule.description || 'Description undefined');
+      // Включена
+      await expect(licenseRuleRow.nth(2)).toHaveText(newLicenseRule.enabled ? 'Да' : 'Нет');
+      // Применять только к новым пользователям
+      await expect(licenseRuleRow.nth(3)).toHaveText(newLicenseRule.new_user_apply ? 'Да' : 'Нет');
+      // Тип лицензии
+      await expect(licenseRuleRow.nth(4)).toHaveText(newLicenseRule.license_type);
+      // Фильтр пользователей
+      const filterText = function (filter: string[][]) {
+        let localeFilter: string[] = [];
+        for (let i in filter) {
+          let row = +i;
+          if (filter[row].length > 1) {
+            localeFilter.push(
+              userFilterMapping.type[filter[row][0] as keyof typeof userFilterMapping.type] +
+                ' ' +
+                userFilterMapping.filter[filter[row][1] as keyof typeof userFilterMapping.filter] +
+                (filter[row][2] ? ` ${filter[row][2]}` : '')
+            );
+          }
+        }
+        return localeFilter;
+      };
+      await expect(licenseRuleRow.nth(5).locator('ul li')).toHaveText(filterText(newLicenseRule.user_filter));
+      // Дата изменения
+      expect(
+        Math.abs(
+          licenseRuleUpdationDate.diff(
+            dayjs(await licenseRuleRow.nth(7).textContent(), 'DD.MM.YYYY HH:mm:ss'),
+            'second'
+          )
+        )
+      ).toBeLessThanOrEqual(1);
+      // Элементы управления
+      await expect(licenseRuleRow.locator('button').nth(0)).toBeVisible();
+      await expect(licenseRuleRow.locator('button').nth(1)).toBeVisible();
+
+      // аписываем правило для дальнейших тестов
+      newLicenseRule.id = oldLicenseRule.id;
+      rewriteData('license_rule_uno', newLicenseRule);
+    });
+
+    await test.step('Проверяем логи в журнале событий', async () => {
+      await test.step('Переходим в "События информационной безопасности"', async () => {
+        await commonPage.adminLinksMenu.logsLink.click();
+        await page.waitForLoadState('load');
+
+        await logsPage.tabs.informationSecurityLogs.click();
+        await expect(commonPage.contentLoader).toBeHidden();
+      });
+      await test.step('Ищем событие изменения правила', async () => {
+        await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
+        await page.getByRole('menuitem', { name: 'License rule edited' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+        // Не работает поиск по объекту операции, ищем по адресу объекта
+        await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${oldLicenseRule.id}`);
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+
+        await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+      });
+      await test.step('Проверяем лог изменения правила', async () => {
+        const updOptions = function (newLR: LicenseRule, oldLR: LicenseRule) {
+          let options = [];
+          if (newLR.name !== oldLR.name) {
+            options.push('Имя параметра: Name', `Старое значение: ${oldLR.name}`, `Новое значение: ${newLR.name}`);
+          }
+          if (newLR.description !== oldLR.description) {
+            options.push(
+              'Имя параметра: Description',
+              `Старое значение: ${oldLR.description}`,
+              `Новое значение: ${newLR.description}`
+            );
+          }
+          if (newLR.enabled !== oldLR.enabled) {
+            options.push(
+              'Имя параметра: Enable',
+              `Старое значение: ${Helper.capitalize(oldLR.enabled + '')}`,
+              `Новое значение: ${Helper.capitalize(newLR.enabled + '')}`
+            );
+          }
+          if (newLR.license_type !== oldLR.license_type) {
+            options.push(
+              'Имя параметра: LicenseType',
+              `Старое значение: ${oldLR.license_type}`,
+              `Новое значение: ${newLR.license_type}`
+            );
+          }
+          if (newLR.new_user_apply !== oldLR.new_user_apply) {
+            options.push(
+              'Имя параметра: ApplyToNewUserOnly',
+              `Старое значение: ${oldLR.new_user_apply}`,
+              `Новое значение: ${newLR.new_user_apply}`
+            );
+          }
+          return options;
+        };
+
+        const userDeleteLogInfo: LogInfo = {
+          event: 'LicenseRuleEdited',
+          time: licenseRuleUpdationDate,
+          options: updOptions(newLicenseRule, oldLicenseRule),
+          importanceLevel: 'Info',
+          message: 'License rule was edited',
+          section: 'LicenseRule',
+          operObjectType: 'Распределение лицензий',
+          operObjectlink: `/admin/license-rules/${oldLicenseRule.id}`,
+          operObjectName: newLicenseRule.name,
+          operObjectAddress: `${oldLicenseRule.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
@@ -231,15 +452,8 @@ test.describe('Действия с правилами распределения
     11. Проверить поле “Параметры”
     – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.2.3. Удаление распределения лицензий', async ({
-    page,
-    commonPage,
-    licenseRulesPage,
-    logsPage,
-    helper,
-    data,
-  }) => {
-    let licenseRuleId: string | null;
+  test('6.2.3. Удаление распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage, data }) => {
+    let licenseRule: LicenseRule = data.license_rule_uno;
     let licenseRuleDeletionDate: Dayjs;
 
     await test.step('Ищем созданнoe распределениe лицензий', async () => {
@@ -249,16 +463,6 @@ test.describe('Действия с правилами распределения
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
-      // Вытягиваем ID созданного правила из ссылки
-      await licenseRulesPage.table.body
-        .locator('tr.ant-table-row')
-        .nth(0)
-        .locator('td')
-        .locator('button')
-        .nth(0)
-        .click();
-      licenseRuleId = page.url().split('/license-rules/')[1];
-      await commonPage.adminLinksMenu.licenseRulesLink.click();
     });
     await test.step('Удаляем распределениe лицензий', async () => {
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
@@ -300,15 +504,13 @@ test.describe('Действия с правилами распределения
       await test.step('Ищем событие удаления распределения лицензий', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'License rule deleted' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
-        await page
-          .locator('input[data-testid*=table-search-input]')
-          .last()
-          .fill(licenseRuleId + '');
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${licenseRule.id}`);
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
@@ -321,12 +523,9 @@ test.describe('Действия с правилами распределения
           message: 'Deleted',
           section: 'LicenseRule',
           operObjectType: 'Распределение лицензий',
-          operObjectlink: `/admin/license-rules/${licenseRuleId}`,
+          operObjectlink: `/admin/license-rules/${licenseRule.id}`,
           operObjectName: data.license_rule_uno.name,
-          operObjectAddress: licenseRuleId || '',
-          operSubjectName: getMainUser().username,
-          operSubjectLink: '/admin/users/edit/',
-          operSubjectAddress: '',
+          operObjectAddress: `${licenseRule.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });

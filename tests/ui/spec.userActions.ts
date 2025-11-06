@@ -1,9 +1,12 @@
+import { User } from '../../data/data';
+import { rewriteData } from '../../data/data.common';
 import { LogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 import dayjs, { Dayjs } from 'dayjs';
+import Helper from '../../utils/helper';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
@@ -50,18 +53,24 @@ test.describe('Действия с пользователем', async () => {
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.1.1. Создание пользователя', async ({ page, commonPage, usersPage, logsPage, helper, data }) => {
+    const user: User = data.user_uno;
     let userCreationDate: Dayjs;
-    let userGuid: string | null;
 
     await test.step('Переходим к созданию пользователя', async () => {
       await usersPage.createUserBtn.click();
     });
     await test.step('Заполняем форму пользователя', async () => {
-      await usersPage.newUserPage.usernameField.input.fill(data.user_uno.username);
-      await usersPage.newUserPage.displayedNameField.input.fill(data.user_uno.displayed_name);
-      await usersPage.newUserPage.emailField.input.fill(data.user_uno.email);
-      await usersPage.newUserPage.passwordField.input.fill(data.user_uno.password);
-      await usersPage.newUserPage.repeatPasswordField.input.fill(data.user_uno.password);
+      await usersPage.newUserPage.usernameField.input.fill(user.username);
+      await usersPage.newUserPage.displayedNameField.input.fill(`${user.displayed_name}`);
+      await usersPage.newUserPage.emailField.input.fill(`${user.email}`);
+      await usersPage.newUserPage.passwordField.input.fill(user.password);
+      await usersPage.newUserPage.repeatPasswordField.input.fill(user.password);
+      if (!user.active) {
+        await usersPage.newUserPage.isActiveCheckbox.checkbox.click();
+      }
+      if (user.first_login_reset_password) {
+        await usersPage.newUserPage.firstLoginResetPasswordCheckbox.checkbox.click();
+      }
     });
     await test.step('Создаём пользователя', async () => {
       await usersPage.newUserPage.createBtn.click();
@@ -73,7 +82,7 @@ test.describe('Действия с пользователем', async () => {
     await test.step('Ищем созданного пользователя', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
-      await commonPage.searchField.input.fill(data.user_uno.username);
+      await commonPage.searchField.input.fill(user.username);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -81,11 +90,11 @@ test.describe('Действия с пользователем', async () => {
     await test.step('Проверяем созданного пользователя', async () => {
       const userRow = usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
       // Имя
-      await expect(userRow.nth(1)).toHaveText(data.user_uno.username);
+      await expect(userRow.nth(1)).toHaveText(user.username);
       // Отображаемое имя
-      await expect(userRow.nth(2)).toHaveText(data.user_uno.displayed_name);
+      await expect(userRow.nth(2)).toHaveText(`${user.displayed_name}`);
       // E-mail
-      await expect(userRow.nth(3)).toHaveText(data.user_uno.email);
+      await expect(userRow.nth(3)).toHaveText(`${user.email}`);
       // Импорт из AD
       await expect(userRow.nth(4)).toHaveText('Нет');
       // Группы
@@ -95,7 +104,7 @@ test.describe('Действия с пользователем', async () => {
       // Тип лицензии
       await expect(userRow.nth(7)).toBeEmpty();
       // Деактивирован
-      await expect(userRow.nth(8)).toHaveText('Нет');
+      await expect(userRow.nth(8)).toHaveText(user.active ? 'Нет' : 'Да');
       // Дата создания (иногда округляется в меньшую сторону на секунду)
       expect(
         Math.abs(userCreationDate.diff(dayjs(await userRow.nth(9).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
@@ -107,8 +116,8 @@ test.describe('Действия с пользователем', async () => {
       // Кем изменён
       await expect(userRow.nth(12)).toBeEmpty();
       // Внутренний ID (запоминаем для логов)
-      userGuid = await userRow.nth(13).textContent();
-      expect(userGuid).toMatch(helper.regexMasks.guid);
+      user.id = (await userRow.nth(13).textContent()) || '';
+      expect(user.id).toMatch(helper.regexMasks.guid);
       // AD ID
       await expect(userRow.nth(14)).toBeEmpty();
       // Источник пользователя
@@ -116,6 +125,9 @@ test.describe('Действия с пользователем', async () => {
       // Элементы управления
       await expect(userRow.last().locator('button[data-testid*=users-page-table-item-edit]')).toBeVisible();
       await expect(userRow.last().locator('button[data-testid*=users-page-table-item-delete]')).toBeVisible();
+
+      // Записываем id пользователя для дальнейших тестов
+      rewriteData('user_uno', user);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -129,15 +141,13 @@ test.describe('Действия с пользователем', async () => {
       await test.step('Ищем событие создания пользователя', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'User created' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
-        await page
-          .locator('input[data-testid*=table-search-input]')
-          .last()
-          .fill(userGuid + '');
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${user.id}`);
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
@@ -147,26 +157,23 @@ test.describe('Действия с пользователем', async () => {
           time: userCreationDate,
           options: [
             'Имя параметра: UserName',
-            `Значение: ${data.user_uno.username}`,
+            `Значение: ${user.username}`,
             'Имя параметра: Email',
-            `Значение: ${data.user_uno.email}`,
+            `Значение: ${user.email}`,
             'Имя параметра: Groups',
             'Значение: (пусто)',
             'Имя параметра: ForceChangeOnLogin',
-            'Значение: False',
+            `Значение: ${Helper.capitalize(user.first_login_reset_password + '')}`,
             'Имя параметра: Inactive',
-            'Значение: False',
+            `Значение: ${Helper.capitalize(!user.active + '')}`,
           ],
           importanceLevel: 'Info',
           message: 'User was created',
           section: 'User',
           operObjectType: 'Пользователь',
-          operObjectlink: `/admin/users/edit/${userGuid}`,
-          operObjectName: data.user_uno.username,
-          operObjectAddress: userGuid || '',
-          operSubjectName: getMainUser().username,
-          operSubjectLink: '/admin/users/edit/',
-          operSubjectAddress: '',
+          operObjectlink: `/admin/users/edit/${user.id}`,
+          operObjectName: user.username,
+          operObjectAddress: `${user.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
@@ -196,26 +203,25 @@ test.describe('Действия с пользователем', async () => {
   10. Проверить поле “Параметры”
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.3. Удаление пользователя', async ({ page, commonPage, usersPage, logsPage, helper, data }) => {
-    let userGuid: string | null;
+  test('6.1.3. Удаление пользователя', async ({ page, commonPage, usersPage, logsPage, data }) => {
+    const user: User = data.user_uno;
     let userDeletionDate: Dayjs;
 
     await test.step('Ищем созданного пользователя', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
-      await commonPage.searchField.input.fill(data.user_uno.username);
+      await commonPage.searchField.input.fill(user.username);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
-      userGuid = await usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(13).textContent();
     });
     await test.step('Удаляем пользователя', async () => {
       await expect(usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(1)).toHaveText(
-        data.user_uno.username
+        user.username
       );
       await page.locator('tr.ant-table-row').nth(0).locator('td').last().locator('[data-testid*=delete]').click();
 
-      await test.step('Проверяем модальное окно удаления правила', async () => {
+      await test.step('Проверяем модальное окно удаления пользователя', async () => {
         await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
           'Вы уверены что хотите удалить данного пользователя?'
         );
@@ -244,15 +250,13 @@ test.describe('Действия с пользователем', async () => {
       await test.step('Ищем событие удаления пользователя', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'User deleted (local)' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
-        await page
-          .locator('input[data-testid*=table-search-input]')
-          .last()
-          .fill(userGuid + '');
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${user.id}`);
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
@@ -265,12 +269,9 @@ test.describe('Действия с пользователем', async () => {
           message: 'User was deleted',
           section: 'User',
           operObjectType: 'Пользователь',
-          operObjectlink: `/admin/users/edit/${userGuid}`,
-          operObjectName: data.user_uno.username,
-          operObjectAddress: userGuid || '',
-          operSubjectName: getMainUser().username,
-          operSubjectLink: '/admin/users/edit/',
-          operSubjectAddress: '',
+          operObjectlink: `/admin/users/edit/${user.id}`,
+          operObjectName: user.username,
+          operObjectAddress: `${user.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
