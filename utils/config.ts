@@ -10,8 +10,9 @@ export function getMainUser() {
   const user = <User>{
     username: process.env.BI_USERNAME,
     password: process.env.BI_PASSWORD,
+    id: process.env.BI_USER_ID,
   };
-  if ((user.username || user.email) && user.password) {
+  if ((user.username || user.email) && user.password && user.id) {
     return user;
   } else {
     throw Error('Check user credentials in autotests environment.');

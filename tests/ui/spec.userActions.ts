@@ -1,6 +1,6 @@
 import { User } from '../../data/data';
 import { rewriteData } from '../../data/data.common';
-import { LogInfo } from '../../pages/adminPages/page.logs';
+import { SecurityLogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
@@ -11,7 +11,7 @@ import UsersTD from '../../data/data.users';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
-test.describe('Действия с пользователем', async () => {
+test.describe('Действия с пользователями', async () => {
   test.beforeEach(async ({ page, loginPage, commonPage }) => {
     await test.step('Авторизуемся', async () => {
       await loginPage.goToAuthorizedPage('/login', getMainUser());
@@ -76,7 +76,9 @@ test.describe('Действия с пользователем', async () => {
     await test.step('Создаём пользователя', async () => {
       await usersPage.newUserPage.createBtn.click();
       userCreationDate = dayjs(); // Временем создания является время отправки запроса
-      await expect(usersPage.newUserPage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await expect(usersPage.newUserPage.actionAlert).toHaveText('Вы успешно создали пользователя!', {
+        timeout: 30000,
+      });
       await page.waitForLoadState('load');
       await expect(usersPage.table.head).toBeVisible();
     });
@@ -154,7 +156,7 @@ test.describe('Действия с пользователем', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог создания пользователя', async () => {
-        const userDeleteLogInfo: LogInfo = {
+        const userDeleteLogInfo: SecurityLogInfo = {
           event: 'UserCreated',
           time: userCreationDate,
           options: [
@@ -244,7 +246,9 @@ test.describe('Действия с пользователем', async () => {
     await test.step('Сохраняем изменения пользователя', async () => {
       await usersPage.editUserPage.saveBtn.click();
       userModificationDate = dayjs(); // Временем изменения является время отправки запроса
-      await expect(usersPage.editUserPage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await expect(usersPage.editUserPage.actionAlert).toHaveText('Вы успешно сохранили пользователя!', {
+        timeout: 30000,
+      });
       await page.waitForLoadState('load');
       await expect(usersPage.table.head).toBeVisible();
     });
@@ -349,7 +353,7 @@ test.describe('Действия с пользователем', async () => {
           }
           return options;
         };
-        const userDeleteLogInfo: LogInfo = {
+        const userDeleteLogInfo: SecurityLogInfo = {
           event: 'UserEdited',
           time: userModificationDate,
           options: updOptions(newUser, oldUser),
@@ -447,7 +451,7 @@ test.describe('Действия с пользователем', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог удаления пользователя', async () => {
-        const userDeleteLogInfo: LogInfo = {
+        const userDeleteLogInfo: SecurityLogInfo = {
           event: 'UserDeleted',
           time: userDeletionDate,
           options: [],

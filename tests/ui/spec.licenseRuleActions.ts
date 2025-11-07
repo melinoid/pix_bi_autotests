@@ -1,7 +1,7 @@
 import { LicenseRule } from '../../data/data';
 import { rewriteData } from '../../data/data.common';
 import LicenseRulesTD from '../../data/data.licenseRules';
-import { LogInfo } from '../../pages/adminPages/page.logs';
+import { SecurityLogInfo } from '../../pages/adminPages/page.logs';
 import { userFilterMapping } from '../../pages/page.common';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
@@ -80,10 +80,10 @@ test.describe('Действия с правилами распределения
         .click();
       await commonPage.fillUserFilter(licenseRule.user_filter);
     });
-    await test.step('Создаём правило распределения ', async () => {
+    await test.step('Создаём правило распределения', async () => {
       await licenseRulesPage.rulePage.createBtn.click();
       licenseRuleCreationDate = dayjs(); // Временем создания является время отправки запроса
-      await expect(licenseRulesPage.rulePage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await expect(licenseRulesPage.rulePage.actionAlert).toHaveText('Правило успешно создано', { timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(licenseRulesPage.table.head).toBeVisible();
     });
@@ -166,7 +166,7 @@ test.describe('Действия с правилами распределения
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог создания правила', async () => {
-        const userDeleteLogInfo: LogInfo = {
+        const licenseRuleCreateLogInfo: SecurityLogInfo = {
           event: 'LicenseRuleCreated',
           time: licenseRuleCreationDate,
           options: [
@@ -186,10 +186,10 @@ test.describe('Действия с правилами распределения
           section: 'LicenseRule',
           operObjectType: 'Распределение лицензий',
           operObjectlink: `/admin/license-rules/${licenseRule.id}`,
-          operObjectName: data.license_rule_uno.name,
+          operObjectName: licenseRule.name,
           operObjectAddress: `${licenseRule.id}`,
         };
-        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+        await logsPage.checkSecurityLogs(0, licenseRuleCreateLogInfo);
       });
     });
   });
@@ -287,7 +287,7 @@ test.describe('Действия с правилами распределения
     await test.step('Сохраняем изменения правила распределения', async () => {
       await licenseRulesPage.rulePage.createBtn.click();
       licenseRuleModificationDate = dayjs(); // Временем изменения является время отправки запроса
-      await expect(licenseRulesPage.rulePage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await expect(licenseRulesPage.rulePage.actionAlert).toHaveText('Правило успешно обновлено', { timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(licenseRulesPage.table.head).toBeVisible();
     });
@@ -404,7 +404,7 @@ test.describe('Действия с правилами распределения
           return options;
         };
 
-        const userDeleteLogInfo: LogInfo = {
+        const licenseRuleUpdateLogInfo: SecurityLogInfo = {
           event: 'LicenseRuleEdited',
           time: licenseRuleModificationDate,
           options: updOptions(newLicenseRule, oldLicenseRule),
@@ -416,7 +416,7 @@ test.describe('Действия с правилами распределения
           operObjectName: newLicenseRule.name,
           operObjectAddress: `${oldLicenseRule.id}`,
         };
-        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+        await logsPage.checkSecurityLogs(0, licenseRuleUpdateLogInfo);
       });
     });
   });
@@ -459,14 +459,14 @@ test.describe('Действия с правилами распределения
     await test.step('Ищем созданнoe распределениe лицензий', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
-      await commonPage.searchField.input.fill(data.license_rule_uno.name);
+      await commonPage.searchField.input.fill(licenseRule.name);
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
     });
     await test.step('Удаляем распределениe лицензий', async () => {
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
-        data.license_rule_uno.name
+        licenseRule.name
       );
       await licenseRulesPage.table.body
         .locator('tr.ant-table-row')
@@ -478,7 +478,7 @@ test.describe('Действия с правилами распределения
 
       await test.step('Проверяем модальное окно удаления правила', async () => {
         await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
-          `Вы уверены что хотите удалить правило "${data.license_rule_uno.name}"?`
+          `Вы уверены что хотите удалить правило "${licenseRule.name}"?`
         );
         await expect(page.locator('.ant-modal-content .ant-modal-body .ant-typography')).toHaveText(
           'Это действие нельзя отменить.'
@@ -515,19 +515,19 @@ test.describe('Действия с правилами распределения
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог удаления распределения лицензий', async () => {
-        const userDeleteLogInfo: LogInfo = {
+        const licenseRuleDeleteLogInfo: SecurityLogInfo = {
           event: 'LicenseRuleDeleted',
           time: licenseRuleDeletionDate,
-          options: ['Имя параметра: Name', `Значение: ${data.license_rule_uno.name}`],
+          options: ['Имя параметра: Name', `Значение: ${licenseRule.name}`],
           importanceLevel: 'Warn',
           message: 'Deleted',
           section: 'LicenseRule',
           operObjectType: 'Распределение лицензий',
           operObjectlink: `/admin/license-rules/${licenseRule.id}`,
-          operObjectName: data.license_rule_uno.name,
+          operObjectName: licenseRule.name,
           operObjectAddress: `${licenseRule.id}`,
         };
-        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+        await logsPage.checkSecurityLogs(0, licenseRuleDeleteLogInfo);
       });
     });
   });

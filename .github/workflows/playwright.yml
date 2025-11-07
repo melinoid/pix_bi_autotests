@@ -12,6 +12,7 @@ jobs:
       BI_URL: ${{ secrets.BI_URL }}
       BI_USERNAME: ${{ secrets.BI_USERNAME }}
       BI_PASSWORD: ${{ secrets.BI_PASSWORD }}
+      BI_USER_ID: ${{ secrets.BI_USER_ID }}
       AD_USERNAME: ${{ secrets.AD_USERNAME }}
       AD_PASSWORD: ${{ secrets.AD_PASSWORD }}
       AD_HOST: ${{ secrets.AD_HOST }}
@@ -27,7 +28,7 @@ jobs:
       - name: Install Browsers
         run: npx playwright install --with-deps
       - name: Run Smoke Tests
-        run: npx playwright test -g "Smoke"
+        run: npx playwright test --project="Smoke 1.32 Chromium"
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4

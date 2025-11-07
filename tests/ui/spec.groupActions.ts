@@ -1,7 +1,7 @@
 import { Group } from '../../data/data';
 import { rewriteData } from '../../data/data.common';
 import GroupsTD from '../../data/data.groups';
-import { LogInfo } from '../../pages/adminPages/page.logs';
+import { SecurityLogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
@@ -62,7 +62,7 @@ test.describe('Действия с группами', async () => {
     await test.step('Создаём группу', async () => {
       await groupsPage.groupPage.createBtn.click();
       groupCreationDate = dayjs(); // Временем создания является время отправки запроса
-      await expect(groupsPage.groupPage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await expect(groupsPage.groupPage.actionAlert).toHaveText('Вы успешно создали группу!', { timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(groupsPage.table.head).toBeVisible();
     });
@@ -117,7 +117,7 @@ test.describe('Действия с группами', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог создания группы', async () => {
-        const userDeleteLogInfo: LogInfo = {
+        const groupCreateLogInfo: SecurityLogInfo = {
           event: 'GroupCreated',
           time: groupCreationDate,
           options: [],
@@ -129,7 +129,7 @@ test.describe('Действия с группами', async () => {
           operObjectName: group.name,
           operObjectAddress: `${group.id}`,
         };
-        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+        await logsPage.checkSecurityLogs(0, groupCreateLogInfo);
       });
     });
   });
@@ -188,7 +188,7 @@ test.describe('Действия с группами', async () => {
     await test.step('Сохраняем изменения группы', async () => {
       await groupsPage.groupPage.createBtn.click();
       groupModificationDate = dayjs(); // Временем изменения является время отправки запроса
-      await expect(groupsPage.groupPage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await expect(groupsPage.groupPage.actionAlert).toHaveText('Вы успешно сохранили группу!', { timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(groupsPage.table.head).toBeVisible();
     });
@@ -255,7 +255,7 @@ test.describe('Действия с группами', async () => {
           return options;
         };
 
-        const userDeleteLogInfo: LogInfo = {
+        const groupUpdateLogInfo: SecurityLogInfo = {
           event: 'GroupEdited',
           time: groupModificationDate,
           options: updOptions(newGroup, oldGroup),
@@ -267,7 +267,7 @@ test.describe('Действия с группами', async () => {
           operObjectName: newGroup.name,
           operObjectAddress: `${oldGroup.id}`,
         };
-        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+        await logsPage.checkSecurityLogs(0, groupUpdateLogInfo);
       });
     });
   });
@@ -293,8 +293,7 @@ test.describe('Действия с группами', async () => {
   9. Проверить ссылки на ресурсы в полях “Объект операции” и “Субьект операции”
   - Ссылки кликабельны; Ссылки ведут на корректные ресурсы
   10. Проверить поле “Параметры”
-  - В поле указаны корректные параметры созданного/отредактированного ресурса
-  */
+  - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.1.6. Удаление группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
     const group: Group = data.group_uno;
@@ -307,10 +306,6 @@ test.describe('Действия с группами', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
-      // Вытягиваем ID созданной группы из ссылки
-      await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();
-      group.id = page.url().split('/edit/')[1];
-      await commonPage.adminLinksMenu.groupsLink.click();
     });
     await test.step('Удаляем группу', async () => {
       await expect(groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
@@ -360,7 +355,7 @@ test.describe('Действия с группами', async () => {
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
       await test.step('Проверяем лог удаления группы', async () => {
-        const userDeleteLogInfo: LogInfo = {
+        const groupDeleteLogInfo: SecurityLogInfo = {
           event: 'GroupDeleted',
           time: groupDeletionDate,
           options: ['Имя параметра: Name', `Значение: ${group.name}`],
@@ -372,7 +367,7 @@ test.describe('Действия с группами', async () => {
           operObjectName: group.name,
           operObjectAddress: `${group.id}`,
         };
-        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+        await logsPage.checkSecurityLogs(0, groupDeleteLogInfo);
       });
     });
   });

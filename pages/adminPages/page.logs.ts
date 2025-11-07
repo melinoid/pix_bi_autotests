@@ -4,7 +4,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import Helper from '../../utils/helper';
 import { getMainUser } from '../../utils/config';
 
-export interface LogInfo {
+export interface SecurityLogInfo {
   event: string;
   time: Dayjs;
   options: string[];
@@ -20,6 +20,19 @@ export interface LogInfo {
   operSubjectName?: string;
   operSubjectAddress?: string;
   result?: string;
+}
+
+export interface EventLogInfo {
+  event: string;
+  time: Dayjs;
+  operObjectType: string;
+  operObjectlink: string;
+  operObjectName: string;
+  operObjectAddress: string;
+  operSubjectName?: string;
+  operSubjectAddress?: string;
+  result?: string;
+  message: string;
 }
 
 /** Локаторы и функции для раздела `Администрирование` –> `Журнал событий`. */
@@ -57,7 +70,7 @@ export default class LogsPage {
     };
   }
 
-  async checkSecurityLogs(logRowID: number = 0, logInfo: LogInfo) {
+  async checkSecurityLogs(logRowID: number = 0, logInfo: SecurityLogInfo) {
     const logRow = this.table.body.locator('tr.ant-table-row').nth(logRowID).locator('td');
     // Событие
     await expect(logRow.nth(0)).toHaveText(logInfo.event);
@@ -83,12 +96,35 @@ export default class LogsPage {
     // Адрес объекта операции
     await expect(logRow.nth(9)).toHaveText(logInfo.operObjectAddress);
     // Субъект операции
-    await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(
-      logInfo.operSubjectName || getMainUser().username
-    );
+    await expect(
+      logRow.nth(10).locator(`a[href="/admin/users/edit/${logInfo.operSubjectAddress || getMainUser().id}"]`)
+    ).toHaveText(logInfo.operSubjectName || getMainUser().username);
     // Адрес субъекта операции
-    expect(await logRow.nth(11).textContent()).toMatch(this.helper.regexMasks.guid);
+    await expect(logRow.nth(11)).toHaveText(`${logInfo.operSubjectAddress || getMainUser().id}`);
     // Результат операции
     await expect(logRow.nth(12)).toHaveText(logInfo.result || 'Success');
+  }
+
+  async checkEventLogs(logRowID: number = 0, logInfo: EventLogInfo) {
+    const logRow = this.table.body.locator('tr.ant-table-row').nth(logRowID).locator('td');
+    // Событие
+    await expect(logRow.nth(0)).toHaveText(logInfo.event);
+    // Время
+    expect(
+      Math.abs(logInfo.time.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
+    ).toBeLessThanOrEqual(7);
+    // Пользователь
+    await expect(
+      logRow.nth(2).locator(`a[href="/admin/users/edit/${logInfo.operSubjectAddress || getMainUser().id}"]`)
+    ).toHaveText(logInfo.operSubjectAddress || getMainUser().id + '');
+    // Имя пользователя
+    await expect(logRow.nth(3)).toHaveText(logInfo.operSubjectName || getMainUser().username);
+    // Объект
+    await expect(logRow.nth(4)).toHaveText(`${logInfo.operObjectType}: ${logInfo.operObjectName}`);
+    await expect(logRow.nth(4).locator(`a[href="${logInfo.operObjectlink}"]`)).toHaveText(logInfo.operObjectName);
+    // Успешность события
+    await expect(logRow.nth(5)).toHaveText(logInfo.result || 'Success');
+    // Комментарий
+    await expect(logRow.nth(6)).toHaveText(logInfo.message);
   }
 }

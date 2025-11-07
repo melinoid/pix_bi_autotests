@@ -21,8 +21,15 @@ teardown('Чистим тестовые данные', async ({ request, data })
       for (let i = 0; i < responseData.totalCount; i++) {
         const user: any = responseData.list[i];
         response = await request.post('/api/v0/users/delete', {
+          headers: { authorization: process.env.BI_TOKEN || '' },
           data: { ids: [`${user.id}`] },
         });
+
+        if (response.status() !== 200) {
+          throw Error(response.statusText());
+        } else {
+          console.log(await response.json());
+        }
       }
     }
   });
@@ -33,7 +40,15 @@ teardown('Чистим тестовые данные', async ({ request, data })
     if (responseData.totalCount) {
       for (let i = 0; i < responseData.totalCount; i++) {
         const group: any = responseData.list[i];
-        response = await request.delete(`/api/v0/user-group/${group.id}`, {});
+        response = await request.delete(`/api/v0/user-group/${group.id}`, {
+          headers: { authorization: process.env.BI_TOKEN || '' },
+        });
+      }
+
+      if (response.status() !== 200) {
+        throw Error(response.statusText());
+      } else {
+        console.log(await response.json());
       }
     }
   });
@@ -44,7 +59,15 @@ teardown('Чистим тестовые данные', async ({ request, data })
     if (responseData.totalCount) {
       for (let i = 0; i < responseData.totalCount; i++) {
         const licenseRule: any = responseData.list[i];
-        response = await request.delete(`/api/v0/license/rule/${licenseRule.id}`, {});
+        response = await request.delete(`/api/v0/license/rule/${licenseRule.id}`, {
+          headers: { authorization: process.env.BI_TOKEN || '' },
+        });
+      }
+
+      if (response.status() !== 200) {
+        throw Error(response.statusText());
+      } else {
+        console.log(await response.json());
       }
     }
   });
@@ -55,15 +78,40 @@ teardown('Чистим тестовые данные', async ({ request, data })
     if (responseData.totalCount) {
       for (let i = 0; i < responseData.totalCount; i++) {
         const ldapConnector: any = responseData.list[i];
-        response = await request.delete(`/api/v0/settings/user-connector/${ldapConnector.id}`, {});
+        response = await request.delete(`/api/v0/settings/user-connector/${ldapConnector.id}`, {
+          headers: { authorization: process.env.BI_TOKEN || '' },
+        });
+      }
+
+      if (response.status() !== 200) {
+        throw Error(response.statusText());
+      } else {
+        console.log(await response.json());
+      }
+    }
+  });
+
+  await teardown.step('Удаляем тестовые директории', async () => {
+    const responseData = await getList('/api/v0/admin/directories', data.directory_uno.name);
+
+    if (responseData.totalCount) {
+      for (let i = 0; i < responseData.totalCount; i++) {
+        const directory: any = responseData.list[i];
+        response = await request.post('/api/v0/admin/directories/delete', {
+          headers: { authorization: process.env.BI_TOKEN || '' },
+          data: { directoryIds: [directory.id] },
+        });
+      }
+
+      if (response.status() !== 200) {
+        throw Error(response.statusText());
+      } else {
+        console.log(await response.json());
       }
     }
   });
 
   async function getList(path: string, query: string) {
-    let totalCount = 0;
-    let list: any = [];
-
     response = await request.post(path, {
       headers: { authorization: process.env.BI_TOKEN || '' },
       data: { searchText: query, filters: {}, sort: [] },
@@ -72,6 +120,9 @@ teardown('Чистим тестовые данные', async ({ request, data })
     if (response.status() !== 200) {
       throw Error(response.statusText());
     }
+
+    const totalCount: any = (await response.json()).totalCount;
+    const list: any = (await response.json()).data;
 
     return { totalCount, list };
   }

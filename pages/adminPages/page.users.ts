@@ -180,13 +180,10 @@ export default class UsersPage {
         },
         changeBtn: page.locator('.ant-modal-content .ant-modal-footer .ant-btn-primary'),
       },
-      actionAlert: page
-        .locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-form-item')
-        .nth(13)
-        .getByRole('alert'),
+      actionAlert: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row').nth(13).getByRole('alert'),
       saveBtn: page
-        .locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-form-item')
-        .nth(14)
+        .locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-row')
+        .last()
         .locator('button[type=submit]'),
     };
   }

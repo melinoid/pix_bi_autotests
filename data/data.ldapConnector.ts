@@ -6,7 +6,7 @@ var timezone = require('dayjs/plugin/timezone');
 dayjs.extend(timezone);
 
 /** Всё связанное с тестовыми данными LDAP коннектороров. */
-export default class LDAPConnectorTD {
+export default class LDAPConnectorsTD {
   /**
    * Генерация настроек LDAP коннектора.
    * @returns объект с данными коннектора.
@@ -44,7 +44,7 @@ export default class LDAPConnectorTD {
       email: 'mail',
       account_name: 'sAMAccountName',
       object_sid: 'objectSid',
-      group_membership: 'memberOf',
+      group_membership: 'memberof',
       object_class: 'objectclass',
       user_object_class: 'person',
       group_object_class: 'group',

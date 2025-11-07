@@ -5,7 +5,7 @@ export default defineConfig({
   reportSlowTests: null,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: 1,
+  retries: 0,
   workers: 1,
   reporter: 'list',
   timeout: 180000,

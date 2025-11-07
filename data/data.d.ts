@@ -84,3 +84,22 @@ export interface LicenseRule {
   user_filter: string[][];
   metadata?: MetaData;
 }
+
+export interface RlsOmit {
+  id?: string;
+  name: string;
+  description?: string;
+  enabled: boolean;
+  appName: string;
+  user_filter: string[][];
+  rls_filter?: string[][];
+  omit_filter?: string[][];
+  metadata?: MetaData;
+}
+
+export interface Directory {
+  id?: string;
+  name: string;
+  description?: string;
+  metadata?: MetaData
+}
