@@ -1,8 +1,20 @@
+# docker-compose.yml
 services:
   autotests:
     image: bi_tests:latest
     build:
+      context: .
       dockerfile: .tools/Dockerfile
     volumes:
       - .:/autotests
-    command: npx playwright test -g Smoke | ln s /node_modulse ./node_modules && npx playwright test -g Smoke
+    command: /bin/sh -c 'npx playwright test --project="Smoke 1.32 Chromium"'
+    environment:
+      - BI_URL
+      - BI_USERNAME
+      - BI_PASSWORD
+      - BI_USER_ID
+      - AD_USERNAME
+      - AD_PASSWORD
+      - AD_HOST
+      - AD_PORT
+      - AD_DOMEN

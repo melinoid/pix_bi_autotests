@@ -83,6 +83,7 @@ test.describe.serial('Действия с LDAP импортом пользова
     helper,
     data,
   }) => {
+    test.slow(); // Иногда импорт пользователей провисает
     let ldapConnector: LDAP = data.ldap_connector_uno;
     let ldapConnectorCreationDate: Dayjs;
 

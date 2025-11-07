@@ -1,4 +1,4 @@
-FROM node:lts-bullseye-slim
+FROM --platform=linux/amd64 node:lts-bullseye-slim
 
 WORKDIR /autotests
 
@@ -17,6 +17,5 @@ RUN npm i --ignore-scripts && \
 RUN npx playwright install --with-deps && \
     mv node_modules / && \
     ln -s /node_modules ./node_modules
-
 
 CMD ["npx", "playwright", "test", "-g", "Smoke"]

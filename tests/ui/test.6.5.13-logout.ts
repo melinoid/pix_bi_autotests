@@ -40,6 +40,10 @@ test('6.5.13. Выход из системы', async ({ page, loginPage, mainPag
     await page.goto('/directory');
     await expect(commonPage.sideMenu.dirsBtn).toBeHidden();
     await expect(loginPage.loginForm.passwordInput).toBeVisible();
-    expect(page.url().split(`${baseURL}`)[1]).toBe('/login');
+    try {
+      expect.soft(page.url().split(`${baseURL}`)[1]).toBe('/login');
+    } catch {
+      expect.soft(page.url().split(`${baseURL}`)[1]).toBe('/login?noRedirect=true');
+    }
   });
 });

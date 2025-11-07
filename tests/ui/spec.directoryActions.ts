@@ -60,6 +60,7 @@ test.describe.serial('Действия с директориями', async () =>
     await test.step('Создаём директорию', async () => {
       await directoriesPage.createDirModal.createBtn.click();
       dirCreationDate = dayjs(); // Временем создания является время отправки запроса
+      await expect(directoriesPage.createDirModal.modalTitle).toBeHidden({ timeout: 15000 });
       await page.waitForLoadState('load');
     });
     await test.step('Ищем созданную директорию', async () => {
