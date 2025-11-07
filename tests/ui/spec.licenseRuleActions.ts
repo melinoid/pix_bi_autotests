@@ -236,7 +236,7 @@ test.describe('Действия с правилами распределения
   }) => {
     const oldLicenseRule: LicenseRule = data.license_rule_uno;
     const newLicenseRule = await LicenseRulesTD.createRule();
-    let licenseRuleUpdationDate: Dayjs;
+    let licenseRuleModificationDate: Dayjs;
 
     await test.step('Ищем подходящую группу', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
@@ -284,9 +284,9 @@ test.describe('Действия с правилами распределения
       // Заполняем новый фильтр
       await commonPage.fillUserFilter(newLicenseRule.user_filter);
     });
-    await test.step('Сохраняем изменения правила распределения ', async () => {
+    await test.step('Сохраняем изменения правила распределения', async () => {
       await licenseRulesPage.rulePage.createBtn.click();
-      licenseRuleUpdationDate = dayjs(); // Временем изменения является время отправки запроса
+      licenseRuleModificationDate = dayjs(); // Временем изменения является время отправки запроса
       await expect(licenseRulesPage.rulePage.actionAlert).toBeInViewport({ timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(licenseRulesPage.table.head).toBeVisible();
@@ -331,7 +331,7 @@ test.describe('Действия с правилами распределения
       // Дата изменения
       expect(
         Math.abs(
-          licenseRuleUpdationDate.diff(
+          licenseRuleModificationDate.diff(
             dayjs(await licenseRuleRow.nth(7).textContent(), 'DD.MM.YYYY HH:mm:ss'),
             'second'
           )
@@ -341,7 +341,7 @@ test.describe('Действия с правилами распределения
       await expect(licenseRuleRow.locator('button').nth(0)).toBeVisible();
       await expect(licenseRuleRow.locator('button').nth(1)).toBeVisible();
 
-      // аписываем правило для дальнейших тестов
+      // Записываем правило для дальнейших тестов
       newLicenseRule.id = oldLicenseRule.id;
       rewriteData('license_rule_uno', newLicenseRule);
     });
@@ -406,7 +406,7 @@ test.describe('Действия с правилами распределения
 
         const userDeleteLogInfo: LogInfo = {
           event: 'LicenseRuleEdited',
-          time: licenseRuleUpdationDate,
+          time: licenseRuleModificationDate,
           options: updOptions(newLicenseRule, oldLicenseRule),
           importanceLevel: 'Info',
           message: 'License rule was edited',

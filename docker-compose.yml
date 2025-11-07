@@ -5,4 +5,4 @@ services:
       dockerfile: .tools/Dockerfile
     volumes:
       - .:/autotests
-    command: npx playwright test -g "Smoke" | ln s /node_modulse ./node_modules && npx playwright test -g "Smoke"
+    command: npx playwright test -g Smoke | ln s /node_modulse ./node_modules && npx playwright test -g Smoke

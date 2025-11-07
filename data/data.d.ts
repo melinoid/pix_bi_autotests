@@ -1,9 +1,9 @@
 interface MetaData {
-  created_at: Date;
+  created_at?: Date | string;
   created_by?: string; // User.username
-  modified_at?: Date;
+  modified_at?: Date | string;
   modified_by?: string; // User.username
-  deleted_at?: Date;
+  deleted_at?: Date | string;
   deleted_by?: string; // User.username
 }
 
@@ -70,7 +70,7 @@ export interface User {
   bi_user_id?: string;
   import_source: string;
   metadata?: MetaData & {
-    last_login_date: Date;
+    last_login_date?: Date;
   };
 }
 

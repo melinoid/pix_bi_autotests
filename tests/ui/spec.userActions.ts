@@ -7,6 +7,7 @@ import { expect } from '@playwright/test';
 
 import dayjs, { Dayjs } from 'dayjs';
 import Helper from '../../utils/helper';
+import UsersTD from '../../data/data.users';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
@@ -63,13 +64,13 @@ test.describe('Действия с пользователем', async () => {
       await usersPage.newUserPage.usernameField.input.fill(user.username);
       await usersPage.newUserPage.displayedNameField.input.fill(`${user.displayed_name}`);
       await usersPage.newUserPage.emailField.input.fill(`${user.email}`);
-      await usersPage.newUserPage.passwordField.input.fill(user.password);
-      await usersPage.newUserPage.repeatPasswordField.input.fill(user.password);
+      await usersPage.newUserPage.passField.input.fill(user.password);
+      await usersPage.newUserPage.repeatPassField.input.fill(user.password);
       if (!user.active) {
         await usersPage.newUserPage.isActiveCheckbox.checkbox.click();
       }
       if (user.first_login_reset_password) {
-        await usersPage.newUserPage.firstLoginResetPasswordCheckbox.checkbox.click();
+        await usersPage.newUserPage.firstLoginResetPassCheckbox.checkbox.click();
       }
     });
     await test.step('Создаём пользователя', async () => {
@@ -109,6 +110,7 @@ test.describe('Действия с пользователем', async () => {
       expect(
         Math.abs(userCreationDate.diff(dayjs(await userRow.nth(9).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
       ).toBeLessThanOrEqual(1);
+      user.metadata = { created_at: (await userRow.nth(9).textContent()) + '' };
       // Дата изменения
       await expect(userRow.nth(10)).toBeEmpty();
       // Дата последнего входа
@@ -126,7 +128,7 @@ test.describe('Действия с пользователем', async () => {
       await expect(userRow.last().locator('button[data-testid*=users-page-table-item-edit]')).toBeVisible();
       await expect(userRow.last().locator('button[data-testid*=users-page-table-item-delete]')).toBeVisible();
 
-      // Записываем id пользователя для дальнейших тестов
+      // Записываем пользователя для дальнейших тестов
       rewriteData('user_uno', user);
     });
 
@@ -174,6 +176,190 @@ test.describe('Действия с пользователем', async () => {
           operObjectlink: `/admin/users/edit/${user.id}`,
           operObjectName: user.username,
           operObjectAddress: `${user.id}`,
+        };
+        await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
+      });
+    });
+  });
+
+  /* Create: 05.11.2025
+    https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13072
+
+    1. Открыть подраздел “Пользователи”
+    – Подраздел открыт
+    2. Проскроллить список вправо (ctrl+скролл вниз)
+    – Список проскроллен
+    3. Нажать на иконку карандаша в строке с произвольным ресурсом
+    – Открыло окно редактирования ресурса
+    4. Изменить произвольные параметры в окне редактирования
+    – Параметры изменены
+    5. Нажать “Сохранить”
+    – Отображается список проверяемых ресурсов
+    6. Проверить, что внесенные изменения отображаются в списке ресурсов
+    – Изменения отображаются для отредактированного ресурса
+    7. Открыть раздел “Администрирование”
+    8. Перейти в подраздел “Журнал событий”
+    – Открыт “Журнал событий”
+    9. Перейти на вкладку “События Информационной Безопасности”
+    – Отображаются “События Информационной Безопасности”
+    10. Проверить запись "User edited"
+    – Запись присутствует в журнале
+    – В новой записи, в колонке “Объект операции” указан отредактированный пользователь
+    – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
+
+  test('6.1.2. Редактирование пользователя', async ({ page, commonPage, usersPage, logsPage, data, helper }) => {
+    const oldUser: User = data.user_uno;
+    const newUser = await UsersTD.createUser();
+    let userModificationDate: Dayjs;
+
+    await test.step('Ищем подходящего пользователя', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.openBtn.click();
+      await commonPage.searchField.input.fill(oldUser.username);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+    });
+    await test.step('Переходим к изменению пользователя', async () => {
+      await usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();
+    });
+    await test.step('Заполняем форму пользователя', async () => {
+      await usersPage.editUserPage.usernameField.input.fill(newUser.username);
+      await usersPage.editUserPage.displayedNameField.input.fill(`${newUser.displayed_name}`);
+      await usersPage.editUserPage.emailField.input.fill(`${newUser.email}`);
+
+      const aChecked = await usersPage.editUserPage.isActiveCheckbox.checkbox.isChecked();
+      if ((!aChecked && newUser.active) || (aChecked && !newUser.active)) {
+        await usersPage.editUserPage.isActiveCheckbox.checkbox.click();
+      }
+
+      await expect(usersPage.editUserPage.isADCheckbox.checkbox).toBeDisabled();
+      await expect(usersPage.editUserPage.adGroupField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.adUserIDField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.creationDateField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.modificationDateField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.updatedByField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.licenseTypeField.input).toBeDisabled();
+    });
+    await test.step('Сохраняем изменения пользователя', async () => {
+      await usersPage.editUserPage.saveBtn.click();
+      userModificationDate = dayjs(); // Временем изменения является время отправки запроса
+      await expect(usersPage.editUserPage.actionAlert).toBeInViewport({ timeout: 30000 });
+      await page.waitForLoadState('load');
+      await expect(usersPage.table.head).toBeVisible();
+    });
+    await test.step('Ищем изменённого пользователя', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      await commonPage.searchField.input.clear();
+      await commonPage.searchField.input.fill(newUser.username);
+      await expect(commonPage.contentLoader).toBeHidden();
+
+      await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+    });
+    await test.step('Проверяем изменённого пользователя', async () => {
+      const userRow = usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+      // Имя
+      await expect(userRow.nth(1)).toHaveText(newUser.username);
+      // Отображаемое имя
+      await expect(userRow.nth(2)).toHaveText(`${newUser.displayed_name}`);
+      // E-mail
+      await expect(userRow.nth(3)).toHaveText(`${newUser.email}`);
+      // Импорт из AD
+      await expect(userRow.nth(4)).toHaveText('Нет');
+      // Группы
+      await expect(userRow.nth(5)).toBeEmpty();
+      // Группа AD
+      await expect(userRow.nth(6)).toBeEmpty();
+      // Тип лицензии
+      await expect(userRow.nth(7)).toBeEmpty();
+      // Деактивирован
+      await expect(userRow.nth(8)).toHaveText(newUser.active ? 'Нет' : 'Да');
+      // Дата создания
+      await expect(userRow.nth(9)).toHaveText(`${oldUser.metadata?.created_at}`);
+      // Дата изменения
+      expect(
+        Math.abs(userModificationDate.diff(dayjs(await userRow.nth(10).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
+      ).toBeLessThanOrEqual(1);
+      // Дата последнего входа
+      await expect(userRow.nth(11)).toBeEmpty();
+      // Кем изменён
+      await expect(userRow.nth(12)).toHaveText(getMainUser().username);
+      // Внутренний ID
+      newUser.id = (await userRow.nth(13).textContent()) || '';
+      expect(oldUser.id === newUser.id).toBeTruthy();
+      expect(newUser.id).toMatch(helper.regexMasks.guid);
+      // AD ID
+      await expect(userRow.nth(14)).toBeEmpty();
+      // Источник пользователя
+      await expect(userRow.nth(15)).toBeEmpty();
+      // Элементы управления
+      await expect(userRow.last().locator('button[data-testid*=users-page-table-item-edit]')).toBeVisible();
+      await expect(userRow.last().locator('button[data-testid*=users-page-table-item-delete]')).toBeVisible();
+
+      // Перезаписываем пользователя для дальнейших тестов
+      rewriteData('user_uno', newUser);
+    });
+
+    await test.step('Проверяем логи в журнале событий', async () => {
+      await test.step('Переходим в "События информационной безопасности"', async () => {
+        await commonPage.adminLinksMenu.logsLink.click();
+        await page.waitForLoadState('load');
+        await logsPage.tabs.informationSecurityLogs.click();
+        await expect(commonPage.contentLoader).toBeHidden();
+      });
+      await test.step('Ищем событие изменения пользователя', async () => {
+        await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
+        await page.getByRole('menuitem', { name: 'User edited (local)' }).click();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+        // Не работает поиск по объекту операции, ищем по адресу объекта
+        await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
+        await page.locator('input[data-testid*=table-search-input]').last().fill(`${oldUser.id}`);
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+        await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+      });
+      await test.step('Проверяем лог изменения пользователя', async () => {
+        const updOptions = function (newU: User, oldU: User) {
+          let options = [];
+
+          if (newU.email !== oldU.email) {
+            options.push('Имя параметра: Email', `Старое значение: ${oldU.email}`, `Новое значение: ${newU.email}`);
+          }
+          if (newU.username !== oldU.username) {
+            options.push(
+              'Имя параметра: UserName',
+              `Старое значение: ${oldU.username}`,
+              `Новое значение: ${newU.username}`
+            );
+          }
+          if (newU.active !== oldU.active) {
+            options.push(
+              'Имя параметра: Inactive',
+              `Старое значение: ${Helper.capitalize(oldU.active + '')}`,
+              `Новое значение: ${Helper.capitalize(newU.active + '')}`
+            );
+          }
+          if (newU.displayed_name !== oldU.displayed_name) {
+            options.push(
+              'Имя параметра: DisplayName',
+              `Старое значение: ${oldU.displayed_name}`,
+              `Новое значение: ${newU.displayed_name}`
+            );
+          }
+          return options;
+        };
+        const userDeleteLogInfo: LogInfo = {
+          event: 'UserEdited',
+          time: userModificationDate,
+          options: updOptions(newUser, oldUser),
+          importanceLevel: 'Info',
+          message: 'User was edited',
+          section: 'User',
+          operObjectType: 'Пользователь',
+          operObjectlink: `/admin/users/edit/${oldUser.id}`,
+          operObjectName: newUser.username,
+          operObjectAddress: `${oldUser.id}`,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });

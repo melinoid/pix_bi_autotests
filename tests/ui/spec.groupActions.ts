@@ -166,7 +166,7 @@ test.describe('Действия с группами', async () => {
   test('6.1.5. Редактирование группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
     const oldGroup = data.group_uno;
     const newGroup = await GroupsTD.createGroup();
-    let groupUpdationDate: Dayjs;
+    let groupModificationDate: Dayjs;
 
     await test.step('Ищем подходящую группу', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
@@ -187,7 +187,7 @@ test.describe('Действия с группами', async () => {
     });
     await test.step('Сохраняем изменения группы', async () => {
       await groupsPage.groupPage.createBtn.click();
-      groupUpdationDate = dayjs(); // Временем изменения является время отправки запроса
+      groupModificationDate = dayjs(); // Временем изменения является время отправки запроса
       await expect(groupsPage.groupPage.actionAlert).toBeInViewport({ timeout: 30000 });
       await page.waitForLoadState('load');
       await expect(groupsPage.table.head).toBeVisible();
@@ -257,7 +257,7 @@ test.describe('Действия с группами', async () => {
 
         const userDeleteLogInfo: LogInfo = {
           event: 'GroupEdited',
-          time: groupUpdationDate,
+          time: groupModificationDate,
           options: updOptions(newGroup, oldGroup),
           importanceLevel: 'Info',
           message: 'User group was updated',
