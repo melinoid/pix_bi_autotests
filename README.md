@@ -10,7 +10,7 @@
    ```
 2. Установите зависимости:
    ```bash
-   npm i && npx playwright install --with-deps chromium
+   npm i && npx playwright install --with-deps
    ```
 3. Создайте **.env** файл со следующими переменными
    ```bash

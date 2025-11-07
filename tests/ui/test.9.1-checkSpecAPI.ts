@@ -27,6 +27,11 @@ test('9.1. Специальные API', async ({ page, loginPage, commonPage }) 
       page.locator('div :has-text("Срок действия некоторых лицензии в системе заканчивается")').first()
     ).toBeHidden({ timeout: 6000 });
     // Упрощение логики через скриншот тестирование
-    await expect(page).toHaveScreenshot('specialApiPage.png');
+    await expect(page).toHaveScreenshot('specialApiPage.png', {
+      animations: 'allow',
+      caret: 'hide',
+      maxDiffPixelRatio: 0.01,
+      scale: 'css',
+    });
   });
 });

@@ -14,7 +14,7 @@ RUN npm i --ignore-scripts && \
     -o -name 'ThirdP*' -o -name 'UPG*' -o -name 'vend*')
 
 
-RUN npx playwright install --with-deps chromium && \
+RUN npx playwright install --with-deps && \
     mv node_modules / && \
     ln -s /node_modules ./node_modules
 
