@@ -10,7 +10,7 @@ import { rewriteData } from '../../data/data.common';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
-test.describe('Действия с LDAP импортом пользователей', async () => {
+test.describe.serial('Действия с LDAP импортом пользователей', async () => {
   test.beforeEach(async ({ page, loginPage, commonPage }) => {
     await test.step('Авторизуемся', async () => {
       await loginPage.goToAuthorizedPage('/login', getMainUser());

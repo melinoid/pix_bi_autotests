@@ -6,12 +6,11 @@ import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 import dayjs, { Dayjs } from 'dayjs';
-import Helper from '../../utils/helper';
 import DirectoriesTD from '../../data/data.directory';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
-test.describe('Действия с директориями', async () => {
+test.describe.serial('Действия с директориями', async () => {
   test.beforeEach(async ({ page, loginPage, commonPage }) => {
     await test.step('Авторизуемся', async () => {
       await loginPage.goToAuthorizedPage('/login', getMainUser());
@@ -53,6 +52,7 @@ test.describe('Действия с директориями', async () => {
 
     await test.step('Переходим к созданию директории', async () => {
       await directoriesPage.createDirBtn.click();
+      await expect(false).toBeTruthy()
     });
     await test.step('Заполняем форму директории', async () => {
       await directoriesPage.dirPage.nameField.input.fill(directory.name);
@@ -184,7 +184,9 @@ test.describe('Действия с директориями', async () => {
     await test.step('Сохраняем изменения директории', async () => {
       await directoriesPage.dirPage.saveBtn.click();
       dirModificationDate = dayjs(); // Временем изменения является время отправки запроса
-      await expect(directoriesPage.dirPage.actionAlert).toHaveText('Вы успешно сохранили изменения!',{ timeout: 30000 });
+      await expect(directoriesPage.dirPage.actionAlert).toHaveText('Вы успешно сохранили изменения!', {
+        timeout: 30000,
+      });
       await page.waitForLoadState('load');
       await expect(directoriesPage.table.head).toBeVisible();
     });

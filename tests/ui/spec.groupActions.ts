@@ -10,7 +10,7 @@ import dayjs, { Dayjs } from 'dayjs';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
-test.describe('Действия с группами', async () => {
+test.describe.serial('Действия с группами', async () => {
   test.beforeEach(async ({ page, loginPage, commonPage }) => {
     await test.step('Авторизуемся', async () => {
       await loginPage.goToAuthorizedPage('/login', getMainUser());

@@ -12,7 +12,7 @@ import Helper from '../../utils/helper';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
-test.describe('Действия с правилами распределения лицензий', async () => {
+test.describe.serial('Действия с правилами распределения лицензий', async () => {
   test.beforeEach(async ({ page, loginPage, commonPage }) => {
     await test.step('Авторизуемся', async () => {
       await loginPage.goToAuthorizedPage('/login', getMainUser());
