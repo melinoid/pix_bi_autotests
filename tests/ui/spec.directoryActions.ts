@@ -52,7 +52,6 @@ test.describe.serial('Действия с директориями', async () =>
 
     await test.step('Переходим к созданию директории', async () => {
       await directoriesPage.createDirBtn.click();
-      await expect(false).toBeTruthy()
     });
     await test.step('Заполняем форму директории', async () => {
       await directoriesPage.dirPage.nameField.input.fill(directory.name);
