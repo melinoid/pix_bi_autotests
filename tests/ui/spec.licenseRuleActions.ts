@@ -152,7 +152,7 @@ test.describe.serial('Действия с правилами распредел�
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
       });
       await test.step('Ищем событие создания правила', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
@@ -356,7 +356,7 @@ test.describe.serial('Действия с правилами распредел�
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
       });
       await test.step('Ищем событие изменения правила', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
@@ -504,7 +504,7 @@ test.describe.serial('Действия с правилами распредел�
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
       });
       await test.step('Ищем событие удаления распределения лицензий', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();

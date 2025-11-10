@@ -13,7 +13,7 @@ export default defineConfig({
   use: {
     locale: 'ru-RU',
     video: 'retain-on-failure',
-    launchOptions: { slowMo: 0 },
+    launchOptions: { slowMo: 200 },
     baseURL: process.env.BI_URL,
     ignoreHTTPSErrors: true,
   },

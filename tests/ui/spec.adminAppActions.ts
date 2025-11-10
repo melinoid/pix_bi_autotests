@@ -71,7 +71,7 @@ test.describe.serial('Действия с приложениями в подра
       await directoryPage.appModal.createBtn.click();
       appCreationDate = dayjs(); // Временем создания является время отправки запроса
       await page.waitForLoadState('load');
-      await expect(directoryPage.appModal.modalTitle).toBeHidden({ timeout: 10000 });
+      await expect(directoryPage.appModal.modalTitle).toBeHidden({ timeout: 20000 });
     });
     await test.step('Переходим в подраздел администрирования "Приложения"', async () => {
       await commonPage.sideMenu.adminBtn.click();

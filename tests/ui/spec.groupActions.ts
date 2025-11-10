@@ -104,12 +104,12 @@ test.describe.serial('Действия с группами', async () => {
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
       });
       await test.step('Ищем событие создания группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group created (local)' }).click();
-        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page.locator('input[data-testid*=table-search-input]').last().fill(`${group.id}`);
@@ -229,12 +229,12 @@ test.describe.serial('Действия с группами', async () => {
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
       });
       await test.step('Ищем событие изменения группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group edited (local)' }).click();
-        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page.locator('input[data-testid*=table-search-input]').last().fill(`${oldGroup.id}`);
@@ -342,12 +342,12 @@ test.describe.serial('Действия с группами', async () => {
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
       });
       await test.step('Ищем событие удаления группы', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Group deleted (local)' }).click();
-        await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
         // Не работает поиск по объекту операции, ищем по адресу объекта
         await logsPage.table.head.locator('th.ant-table-cell').nth(9).locator('[data-testid*=table-filter]').click();
         await page

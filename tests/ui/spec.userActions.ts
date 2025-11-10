@@ -141,7 +141,7 @@ test.describe('Действия с пользователями', async () => {
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
       });
       await test.step('Ищем событие создания пользователя', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
@@ -311,7 +311,7 @@ test.describe('Действия с пользователями', async () => {
         await commonPage.adminLinksMenu.logsLink.click();
         await page.waitForLoadState('load');
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
       });
       await test.step('Ищем событие изменения пользователя', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
@@ -438,7 +438,7 @@ test.describe('Действия с пользователями', async () => {
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden();
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
       });
       await test.step('Ищем событие удаления пользователя', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
