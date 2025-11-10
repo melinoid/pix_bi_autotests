@@ -101,5 +101,14 @@ export interface Directory {
   id?: string;
   name: string;
   description?: string;
-  metadata?: MetaData
+  metadata?: MetaData;
+}
+
+export interface Application {
+  id?: string;
+  name: string;
+  description?: string;
+  directory_id?: string;
+  directory_name?: string;
+  metadata: MetaData;
 }

@@ -12,7 +12,7 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/screenshots/{testFilePath}/{arg}{ext}',
   use: {
     locale: 'ru-RU',
-    video: 'on-first-retry',
+    video: 'retain-on-failure',
     launchOptions: { slowMo: 0 },
     baseURL: process.env.BI_URL,
     ignoreHTTPSErrors: true,

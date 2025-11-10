@@ -1,5 +1,5 @@
 import { Group } from '../../data/data';
-import { rewriteData } from '../../data/data.common';
+import { rewriteData, writeData } from '../../data/data.common';
 import GroupsTD from '../../data/data.groups';
 import { SecurityLogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
@@ -48,14 +48,15 @@ test.describe.serial('Действия с группами', async () => {
   9. Проверить поле “Параметры”
   – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.4. Создание группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
-    let group: Group = data.group_uno;
+  test('6.1.4. Создание группы', async ({ page, commonPage, groupsPage, logsPage }) => {
+    let group: Group = await GroupsTD.createGroup();
     let groupCreationDate: Dayjs;
 
     await test.step('Переходим к созданию группы', async () => {
       await groupsPage.createGroupBtn.click();
     });
     await test.step('Заполняем форму группы', async () => {
+      await expect(groupsPage.groupPage.pageTitle).toHaveText('Создание группы');
       await groupsPage.groupPage.nameField.input.fill(group.name);
       await groupsPage.groupPage.descriptionField.input.fill(`${group.description}`);
     });
@@ -91,8 +92,9 @@ test.describe.serial('Действия с группами', async () => {
       // Вытягиваем ID созданной группы из ссылки
       await groupRow.locator('button').nth(0).click();
       group.id = page.url().split('/edit/')[1];
-      // Записываем id группы для дальнейших тестов
-      rewriteData('group_uno', group);
+      
+      // Записываем группу для дальнейших тестов
+      writeData('group_crud', group);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -164,7 +166,7 @@ test.describe.serial('Действия с группами', async () => {
   – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.1.5. Редактирование группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
-    const oldGroup = data.group_uno;
+    const oldGroup = data.group_crud;
     const newGroup = await GroupsTD.createGroup();
     let groupModificationDate: Dayjs;
 
@@ -180,6 +182,7 @@ test.describe.serial('Действия с группами', async () => {
       await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();
     });
     await test.step('Заполняем форму группы', async () => {
+      await expect(groupsPage.groupPage.pageTitle).toHaveText(`Редактирование группы '${oldGroup.name}'`);
       await groupsPage.groupPage.nameField.input.clear();
       await groupsPage.groupPage.nameField.input.fill(newGroup.name);
       await groupsPage.groupPage.descriptionField.input.clear();
@@ -201,7 +204,7 @@ test.describe.serial('Действия с группами', async () => {
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       // Записываем изменённую группу
       newGroup.id = oldGroup.id;
-      rewriteData('group_uno', newGroup);
+      rewriteData('group_crud', newGroup);
     });
     await test.step('Проверяем изменённую группу', async () => {
       const groupRow = groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
@@ -296,7 +299,7 @@ test.describe.serial('Действия с группами', async () => {
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.1.6. Удаление группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
-    const group: Group = data.group_uno;
+    const group: Group = data.group_crud;
     let groupDeletionDate: Dayjs;
 
     await test.step('Ищем созданную группу', async () => {

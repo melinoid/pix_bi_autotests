@@ -1,5 +1,5 @@
 import { LicenseRule } from '../../data/data';
-import { rewriteData } from '../../data/data.common';
+import { rewriteData, writeData } from '../../data/data.common';
 import LicenseRulesTD from '../../data/data.licenseRules';
 import { SecurityLogInfo } from '../../pages/adminPages/page.logs';
 import { userFilterMapping } from '../../pages/page.common';
@@ -58,14 +58,15 @@ test.describe.serial('Действия с правилами распредел�
   – В колонке “Объект операции” указано созданное правило
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('6.2.1. Создание распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage, data }) => {
-    let licenseRule: LicenseRule = data.license_rule_uno;
+  test('6.2.1. Создание распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage }) => {
+    let licenseRule: LicenseRule = await LicenseRulesTD.createRule();
     let licenseRuleCreationDate: Dayjs;
 
     await test.step('Переходим к созданию правила распределения', async () => {
       await licenseRulesPage.createRuleBtn.click();
     });
     await test.step('Заполняем форму правила распределения', async () => {
+      await expect(licenseRulesPage.rulePage.pageTitle).toHaveText('Настройка правила распределения лицензий');
       await licenseRulesPage.rulePage.nameField.input.fill(licenseRule.name);
       await licenseRulesPage.rulePage.descriptionField.textarea.fill(`${licenseRule.description}`);
       if (!licenseRule.enabled) {
@@ -141,7 +142,7 @@ test.describe.serial('Действия с правилами распредел�
       await licenseRuleRow.locator('button').nth(0).click();
       licenseRule.id = page.url().split('/license-rules/')[1];
       // Записываем id правила для дальнейших тестов
-      rewriteData('license_rule_uno', licenseRule);
+      writeData('license_rule_crud', licenseRule);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -234,7 +235,7 @@ test.describe.serial('Действия с правилами распредел�
     logsPage,
     data,
   }) => {
-    const oldLicenseRule: LicenseRule = data.license_rule_uno;
+    const oldLicenseRule: LicenseRule = data.license_rule_crud;
     const newLicenseRule = await LicenseRulesTD.createRule();
     let licenseRuleModificationDate: Dayjs;
 
@@ -256,6 +257,7 @@ test.describe.serial('Действия с правилами распредел�
         .click();
     });
     await test.step('Заполняем форму правила распределения', async () => {
+      await expect(licenseRulesPage.rulePage.pageTitle).toHaveText('Настройка правила распределения лицензий');
       await licenseRulesPage.rulePage.nameField.input.fill(newLicenseRule.name);
       await licenseRulesPage.rulePage.descriptionField.textarea.fill(
         newLicenseRule.description || 'Description undefined'
@@ -343,7 +345,7 @@ test.describe.serial('Действия с правилами распредел�
 
       // Записываем правило для дальнейших тестов
       newLicenseRule.id = oldLicenseRule.id;
-      rewriteData('license_rule_uno', newLicenseRule);
+      rewriteData('license_rule_crud', newLicenseRule);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -424,36 +426,36 @@ test.describe.serial('Действия с правилами распредел�
   /* Create: 31.10.2025
   https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13086
 
-    1. Открыть подраздел “Распределение лицензий”
-    - Подраздел открыт
-    2. Нажать на иконку лупы в правом верхнем углу
-    – Открыто поле поиска
-    3. Заполнить поле тестовым названием
-    – Поле заполнено
-    – В списке доступно искомое правило
-    4. Проскролить строку тестового правила вправо
-    – Доступны иконки “Редактирования” и “Удаления”
-    5. Нажать на иконку удаления (корзина)
-    – Открыто окно предупреждения
-    6. Нажать “Удалить”
-    – Правило удалено
-    – Открыт подраздел "Распределение лицензий"
-    7. Перейти в подраздел “Журнал событий”
-    – Открыт “Журнал событий”
-    8. Перейти на вкладку “События Информационной Безопасности”
-    – Отображаются “События Информационной Безопасности”
-    9. Проверить запись "LicenseRuleDeleted"
-    – Присутствует запись об удалении правила распределения лицензий
-    – В колонке “Объект операции” указано удаленное правило
-    – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка
-    10. Проверить ссылки на ресурсы в полях “Объект операции” и “Субьект операции”
-    – Ссылки кликабельны.
-    – Ссылки ведут на корректные ресурсы
-    11. Проверить поле “Параметры”
-    – В поле указаны корректные параметры созданного/отредактированного ресурса */
+  1. Открыть подраздел “Распределение лицензий”
+  - Подраздел открыт
+  2. Нажать на иконку лупы в правом верхнем углу
+  – Открыто поле поиска
+  3. Заполнить поле тестовым названием
+  – Поле заполнено
+  – В списке доступно искомое правило
+  4. Проскролить строку тестового правила вправо
+  – Доступны иконки “Редактирования” и “Удаления”
+  5. Нажать на иконку удаления (корзина)
+  – Открыто окно предупреждения
+  6. Нажать “Удалить”
+  – Правило удалено
+  – Открыт подраздел "Распределение лицензий"
+  7. Перейти в подраздел “Журнал событий”
+  – Открыт “Журнал событий”
+  8. Перейти на вкладку “События Информационной Безопасности”
+  – Отображаются “События Информационной Безопасности”
+  9. Проверить запись "LicenseRuleDeleted"
+  – Присутствует запись об удалении правила распределения лицензий
+  – В колонке “Объект операции” указано удаленное правило
+  – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка
+  10. Проверить ссылки на ресурсы в полях “Объект операции” и “Субьект операции”
+  – Ссылки кликабельны.
+  – Ссылки ведут на корректные ресурсы
+  11. Проверить поле “Параметры”
+  – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.2.3. Удаление распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage, data }) => {
-    let licenseRule: LicenseRule = data.license_rule_uno;
+    let licenseRule: LicenseRule = data.license_rule_crud;
     let licenseRuleDeletionDate: Dayjs;
 
     await test.step('Ищем созданнoe распределениe лицензий', async () => {

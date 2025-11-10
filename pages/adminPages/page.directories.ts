@@ -50,7 +50,7 @@ export default class DirectoriesPage {
     };
 
     this.dirPage = {
-      pageTitle: page.locator(':above(.ant-table-container) h2'),
+      pageTitle: page.locator(':right-of(.ant-menu) h2'),
       nameField: {
         label: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-form-item label').nth(0),
         input: page.locator(':right-of(.ant-layout-sider-light):below(h2)form .ant-form-item input').nth(0),

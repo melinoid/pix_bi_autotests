@@ -1,5 +1,5 @@
 import { Directory } from '../../data/data';
-import { rewriteData } from '../../data/data.common';
+import { rewriteData, writeData } from '../../data/data.common';
 import { EventLogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
@@ -46,14 +46,16 @@ test.describe.serial('Действия с директориями', async () =>
   – В новой записи, в колонке “Объект операции” указана созданная директория
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('2.1.6. Создание директории', async ({ page, commonPage, directoriesPage, logsPage, data }) => {
-    let directory: Directory = data.directory_uno;
+  test('2.1.6. Создание директории', async ({ page, commonPage, directoriesPage, logsPage }) => {
+    let directory: Directory = await DirectoriesTD.createDirectory();
+    writeData('directory_crud', directory);
     let dirCreationDate: Dayjs;
 
     await test.step('Переходим к созданию директории', async () => {
       await directoriesPage.createDirBtn.click();
     });
     await test.step('Заполняем форму директории', async () => {
+      await expect(directoriesPage.createDirModal.modalTitle).toHaveText('Создание директории');
       await directoriesPage.dirPage.nameField.input.fill(directory.name);
       await directoriesPage.dirPage.descriptionField.input.fill(`${directory.description}`);
     });
@@ -92,13 +94,13 @@ test.describe.serial('Действия с директориями', async () =>
       // Вытягиваем ID созданной директории из ссылки
       await directoryRow.locator('button').nth(0).click();
       directory.id = page.url().split('/directories/')[1];
-      // Записываем id директории для дальнейших тестов
+      // Записываем директорию для дальнейших тестов
       directory.metadata = { created_at: dirCreationDate.format('DD.MM.YYYY HH:mm:ss') };
-      rewriteData('directory_uno', directory);
+      rewriteData('directory_crud', directory);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
-      await test.step('Переходим в "События информационной безопасности"', async () => {
+      await test.step('Переходим в "События"', async () => {
         await commonPage.adminLinksMenu.logsLink.click();
         await page.waitForLoadState('load');
 
@@ -133,7 +135,7 @@ test.describe.serial('Действия с директориями', async () =>
   });
 
   /* Create: 07.11.2025
-  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=10602
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=12929
 
   1. Открыть подраздел “Директории”
   2. Проскроллить список вправо (ctrl+скролл вниз)
@@ -154,7 +156,7 @@ test.describe.serial('Действия с директориями', async () =>
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
   test('2.1.7. Редактирование директории', async ({ page, commonPage, directoriesPage, logsPage, data }) => {
-    const oldDirectory = data.directory_uno;
+    const oldDirectory = data.directory_crud;
     const newDirectory = await DirectoriesTD.createDirectory();
     let dirModificationDate: Dayjs;
 
@@ -176,6 +178,7 @@ test.describe.serial('Действия с директориями', async () =>
         .click();
     });
     await test.step('Заполняем форму директории', async () => {
+      await expect(directoriesPage.dirPage.pageTitle).toHaveText(`Редактирование директории ${oldDirectory.name}`);
       await directoriesPage.dirPage.nameField.input.clear();
       await directoriesPage.dirPage.nameField.input.fill(newDirectory.name);
       await directoriesPage.dirPage.descriptionField.input.clear();
@@ -197,12 +200,9 @@ test.describe.serial('Действия с директориями', async () =>
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(directoriesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
-      // Записываем изменённую группу
-      newDirectory.id = oldDirectory.id;
-      rewriteData('directory_uno', newDirectory);
     });
-    await test.step('Проверяем изменённую группу', async () => {
-      await test.step('Проверяем созданную директорию', async () => {
+    await test.step('Проверяем изменённую директорию', async () => {
+      await test.step('Проверяем изменённую директорию', async () => {
         const directoryRow = directoriesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
         // Название
         await expect(directoryRow.nth(1)).toHaveText(newDirectory.name);
@@ -224,12 +224,12 @@ test.describe.serial('Действия с директориями', async () =>
 
         // Записываем изменённую директории для дальнейших тестов
         newDirectory.id = oldDirectory.id;
-        rewriteData('directory_uno', newDirectory);
+        rewriteData('directory_crud', newDirectory);
       });
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
-      await test.step('Переходим в "События информационной безопасности"', async () => {
+      await test.step('Переходим в "События"', async () => {
         await commonPage.adminLinksMenu.logsLink.click();
         await page.waitForLoadState('load');
 
@@ -264,24 +264,24 @@ test.describe.serial('Действия с директориями', async () =>
   });
 
   /* Create: 07.11.2025
-    https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=11185
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=12926
 
-    1. Открыть подраздел “Директории”
-    2. Проскроллить список вправо (ctrl+скролл вниз)
-    – Список проскроллен
-    3. Нажать на иконку корзины в строке с произвольным ресурсом
-    – Отрыто модельное окно с сообщением “Вы уверены что хотите удалить [тип ресурса]?”
-    4. Нажать “Удалить”
-    – Ресурс удален и более не отображается в списке
-    5. Открыть раздел “Администрирование”
-    6. Перейти в подраздел “Журнал событий”
-    – Открыт “Журнал событий”
-    7. Проверить запись типа “Delete” для объекта “Директория”
-    – В новой записи, в колонке “Объект операции” указана удалённая директория
-    – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
+  1. Открыть подраздел “Директории”
+  2. Проскроллить список вправо (ctrl+скролл вниз)
+  – Список проскроллен
+  3. Нажать на иконку корзины в строке с произвольным ресурсом
+  – Отрыто модельное окно с сообщением “Вы уверены что хотите удалить [тип ресурса]?”
+  4. Нажать “Удалить”
+  – Ресурс удален и более не отображается в списке
+  5. Открыть раздел “Администрирование”
+  6. Перейти в подраздел “Журнал событий”
+  – Открыт “Журнал событий”
+  7. Проверить запись типа “Delete” для объекта “Директория”
+  – В новой записи, в колонке “Объект операции” указана удалённая директория
+  – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
   test('2.1.8. Удаление директории', async ({ page, commonPage, directoriesPage, logsPage, data }) => {
-    const directory: Directory = data.directory_uno;
+    const directory: Directory = data.directory_crud;
     let dirDeletionDate: Dayjs;
 
     await test.step('Ищем созданную директорию', async () => {
@@ -325,7 +325,7 @@ test.describe.serial('Действия с директориями', async () =>
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
-      await test.step('Переходим в "События информационной безопасности"', async () => {
+      await test.step('Переходим в "События"', async () => {
         await commonPage.adminLinksMenu.logsLink.click();
         await page.waitForLoadState('load');
 

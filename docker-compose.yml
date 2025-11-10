@@ -7,7 +7,6 @@ services:
       dockerfile: .tools/Dockerfile
     volumes:
       - .:/autotests
-    command: /bin/sh -c 'npx playwright test --project="Smoke 1.32 Chromium"'
     environment:
       - BI_URL
       - BI_USERNAME
@@ -18,3 +17,4 @@ services:
       - AD_HOST
       - AD_PORT
       - AD_DOMEN
+    command: /bin/sh -c 'npx playwright test --project="Smoke 1.32 Chromium"'

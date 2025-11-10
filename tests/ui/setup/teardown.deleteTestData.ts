@@ -15,15 +15,38 @@ teardown('Чистим тестовые данные', async ({ request, data })
   });
 
   await teardown.step('Удаляем тестовых пользователей', async () => {
-    const responseData = await getList('/api/v0/users/list', data.user_uno.username);
+    if (data.user_crud !== undefined) {
+      const responseData = await getList('/api/v0/users/list', data.user_crud.username);
 
-    if (responseData.totalCount) {
-      for (let i = 0; i < responseData.totalCount; i++) {
-        const user: any = responseData.list[i];
-        response = await request.post('/api/v0/users/delete', {
-          headers: { authorization: process.env.BI_TOKEN || '' },
-          data: { ids: [`${user.id}`] },
-        });
+      if (responseData.totalCount) {
+        for (let i = 0; i < responseData.totalCount; i++) {
+          const user: any = responseData.list[i];
+          response = await request.post('/api/v0/users/delete', {
+            headers: { authorization: process.env.BI_TOKEN || '' },
+            data: { ids: [`${user.id}`] },
+          });
+
+          if (response.status() !== 200) {
+            throw Error(response.statusText());
+          } else {
+            console.log(await response.json());
+          }
+        }
+      }
+    }
+  });
+
+  await teardown.step('Удаляем тестовые группы', async () => {
+    if (data.group_crud !== undefined) {
+      const responseData = await getList('/api/v0/user-groups/list', data.group_crud.name);
+
+      if (responseData.totalCount) {
+        for (let i = 0; i < responseData.totalCount; i++) {
+          const group: any = responseData.list[i];
+          response = await request.delete(`/api/v0/user-group/${group.id}`, {
+            headers: { authorization: process.env.BI_TOKEN || '' },
+          });
+        }
 
         if (response.status() !== 200) {
           throw Error(response.statusText());
@@ -34,79 +57,66 @@ teardown('Чистим тестовые данные', async ({ request, data })
     }
   });
 
-  await teardown.step('Удаляем тестовые группы', async () => {
-    const responseData = await getList('/api/v0/user-groups/list', data.group_uno.name);
-
-    if (responseData.totalCount) {
-      for (let i = 0; i < responseData.totalCount; i++) {
-        const group: any = responseData.list[i];
-        response = await request.delete(`/api/v0/user-group/${group.id}`, {
-          headers: { authorization: process.env.BI_TOKEN || '' },
-        });
-      }
-
-      if (response.status() !== 200) {
-        throw Error(response.statusText());
-      } else {
-        console.log(await response.json());
-      }
-    }
-  });
-
   await teardown.step('Удаляем тестовые распределения лицензий', async () => {
-    const responseData = await getList('/api/v0/license/rules/list', data.license_rule_uno.name);
+    if (data.license_rule_crud !== undefined) {
+      const responseData = await getList('/api/v0/license/rules/list', data.license_rule_crud.name);
 
-    if (responseData.totalCount) {
-      for (let i = 0; i < responseData.totalCount; i++) {
-        const licenseRule: any = responseData.list[i];
-        response = await request.delete(`/api/v0/license/rule/${licenseRule.id}`, {
-          headers: { authorization: process.env.BI_TOKEN || '' },
-        });
-      }
+      if (responseData.totalCount) {
+        for (let i = 0; i < responseData.totalCount; i++) {
+          const licenseRule: any = responseData.list[i];
+          response = await request.delete(`/api/v0/license/rule/${licenseRule.id}`, {
+            headers: { authorization: process.env.BI_TOKEN || '' },
+          });
+        }
 
-      if (response.status() !== 200) {
-        throw Error(response.statusText());
-      } else {
-        console.log(await response.json());
+        if (response.status() !== 200) {
+          throw Error(response.statusText());
+        } else {
+          console.log(await response.json());
+        }
       }
     }
   });
 
   await teardown.step('Удаляем тестовые LDAP импорты', async () => {
-    const responseData = await getList('/api/v0/settings/user-connector/ldap/list', data.ldap_connector_uno.name);
+    if (data.ldap_connector_crud !== undefined) {
+      const responseData = await getList('/api/v0/settings/user-connector/ldap/list', data.ldap_connector_crud.name);
 
-    if (responseData.totalCount) {
-      for (let i = 0; i < responseData.totalCount; i++) {
-        const ldapConnector: any = responseData.list[i];
-        response = await request.delete(`/api/v0/settings/user-connector/${ldapConnector.id}`, {
-          headers: { authorization: process.env.BI_TOKEN || '' },
-        });
-      }
+      if (responseData.totalCount) {
+        for (let i = 0; i < responseData.totalCount; i++) {
+          const ldapConnector: any = responseData.list[i];
+          response = await request.delete(`/api/v0/settings/user-connector/${ldapConnector.id}`, {
+            headers: { authorization: process.env.BI_TOKEN || '' },
+          });
+        }
 
-      if (response.status() !== 200) {
-        throw Error(response.statusText());
-      } else {
-        console.log(await response.json());
+        if (response.status() !== 200) {
+          throw Error(response.statusText());
+        } else {
+          console.log(await response.json());
+        }
       }
     }
   });
 
   await teardown.step('Удаляем тестовые директории', async () => {
-    const responseData = await getList('/api/v0/admin/directories', data.directory_uno.name);
+    if (data.directory_crud !== undefined) {
+      const responseData = await getList('/api/v0/admin/directories', data.directory_crud.name);
 
-    if (responseData.totalCount) {
-      for (let i = 0; i < responseData.totalCount; i++) {
-        const directory: any = responseData.list[i];
-        response = await request.post('/api/v0/admin/directories/delete', {
-          headers: { authorization: process.env.BI_TOKEN || '' },
-          data: { directoryIds: [directory.id] },
-        });
-      }
+      if (responseData.totalCount) {
+        for (let i = 0; i < responseData.totalCount; i++) {
+          const directory: any = responseData.list[i];
+          response = await request.post('/api/v0/admin/directories/delete', {
+            headers: { authorization: process.env.BI_TOKEN || '' },
+            data: { directoryIds: [directory.id] },
+          });
+        }
 
-      if (response.status() !== 200) {
-        throw Error(response.statusText());
-      } else {
-        console.log(await response.json());
+        if (response.status() !== 200) {
+          throw Error(response.statusText());
+        } else {
+          console.log(await response.json());
+        }
       }
     }
   });

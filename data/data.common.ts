@@ -9,7 +9,7 @@ if (!fs.existsSync(dir)) {
 
 try {
   var jsonData = require(`../${dataFile}`);
-} catch {
+} catch (e) {
   jsonData = {};
 }
 
@@ -20,10 +20,7 @@ try {
  */
 export function writeData(name: string, data: any) {
   if (typeof jsonData[name] !== 'undefined') {
-    console.log(
-      `Объект с именем ${name} уже существует и будет перезаписан.` +
-        ` Удалите файл ${dataFile} или измените название объекта.`
-    );
+    console.log(`Объект с именем ${name} перезаписан в ${dataFile}`);
   }
   jsonData[name] = data;
   fs.writeFileSync(dataFile, JSON.stringify(jsonData, null, 2));

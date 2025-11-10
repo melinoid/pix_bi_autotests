@@ -1,5 +1,5 @@
 import { User } from '../../data/data';
-import { rewriteData } from '../../data/data.common';
+import { rewriteData, writeData } from '../../data/data.common';
 import { SecurityLogInfo } from '../../pages/adminPages/page.logs';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
@@ -54,7 +54,7 @@ test.describe('Действия с пользователями', async () => {
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.1.1. Создание пользователя', async ({ page, commonPage, usersPage, logsPage, helper, data }) => {
-    const user: User = data.user_uno;
+    const user: User = await UsersTD.createUser();
     let userCreationDate: Dayjs;
 
     await test.step('Переходим к созданию пользователя', async () => {
@@ -131,7 +131,7 @@ test.describe('Действия с пользователями', async () => {
       await expect(userRow.last().locator('button[data-testid*=users-page-table-item-delete]')).toBeVisible();
 
       // Записываем пользователя для дальнейших тестов
-      rewriteData('user_uno', user);
+      writeData('user_crud', user);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -210,7 +210,7 @@ test.describe('Действия с пользователями', async () => {
     – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
   test('6.1.2. Редактирование пользователя', async ({ page, commonPage, usersPage, logsPage, data, helper }) => {
-    const oldUser: User = data.user_uno;
+    const oldUser: User = data.user_crud;
     const newUser = await UsersTD.createUser();
     let userModificationDate: Dayjs;
 
@@ -301,7 +301,7 @@ test.describe('Действия с пользователями', async () => {
       await expect(userRow.last().locator('button[data-testid*=users-page-table-item-delete]')).toBeVisible();
 
       // Перезаписываем пользователя для дальнейших тестов
-      rewriteData('user_uno', newUser);
+      rewriteData('user_crud', newUser);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -394,7 +394,7 @@ test.describe('Действия с пользователями', async () => {
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
   test('6.1.3. Удаление пользователя', async ({ page, commonPage, usersPage, logsPage, data }) => {
-    const user: User = data.user_uno;
+    const user: User = data.user_crud;
     let userDeletionDate: Dayjs;
 
     await test.step('Ищем созданного пользователя', async () => {

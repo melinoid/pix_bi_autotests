@@ -1,7 +1,12 @@
 import { test as base } from '@playwright/test';
 import { data } from '../data/data.common';
 import Helper from './helper';
+
 import CommonPage from '../pages/page.common';
+import LoginPage from '../pages/page.login';
+import LogsPage from '../pages/adminPages/page.logs';
+import MainPage from '../pages/page.main';
+
 import AdminSecurityRulesPage from '../pages/adminPages/page.adminSecurityRules';
 import ApplicationsPage from '../pages/adminPages/page.applications';
 import DirectoriesPage from '../pages/adminPages/page.directories';
@@ -12,9 +17,6 @@ import LicenseBasePage from '../pages/adminPages/page.licenseBase';
 import LicenseProPage from '../pages/adminPages/page.licensePro';
 import LicenseRulesPage from '../pages/adminPages/page.licenseRules';
 import LicensiesPage from '../pages/adminPages/page.licensies';
-import LoginPage from '../pages/page.login';
-import LogsPage from '../pages/adminPages/page.logs';
-import MainPage from '../pages/page.main';
 import ModifiersAuditPage from '../pages/adminPages/page.modifiersAudit';
 import RlsOmitPage from '../pages/adminPages/page.rlsOmit';
 import SecurityRulesPage from '../pages/adminPages/page.securityRules';
@@ -26,12 +28,19 @@ import UsefulLinksPage from '../pages/adminPages/page.usefulLinks';
 import UsersImportPage from '../pages/adminPages/page.usersImport';
 import UsersPage from '../pages/adminPages/page.users';
 
+import DirectoryPage from '../pages/directoryPages/page.directory';
+import ApplicationPage from '../pages/directoryPages/page.application';
+import DashboardPage from '../pages/directoryPages/page.dashboard';
+
 type Fixtures = {
   helper: Helper;
   commonPage: CommonPage;
   aAdminSecurityRulesPage: AdminSecurityRulesPage;
+  applicationPage: ApplicationPage;
   applicationsPage: ApplicationsPage;
+  dashboardPage: DashboardPage;
   directoriesPage: DirectoriesPage;
+  directoryPage: DirectoryPage;
   emailReportsPage: EmailReportsPage;
   geoserversPage: GeoserversPage;
   groupsPage: GroupsPage;
@@ -130,6 +139,15 @@ export const test = base.extend<Fixtures>({
   },
   usersPage: async ({ page }, use) => {
     await use(new UsersPage(page));
+  },
+  directoryPage: async ({ page }, use) => {
+    await use(new DirectoryPage(page));
+  },
+  applicationPage: async ({ page }, use) => {
+    await use(new ApplicationPage(page));
+  },
+  dashboardPage: async ({ page }, use) => {
+    await use(new DashboardPage(page));
   },
   data,
 });
