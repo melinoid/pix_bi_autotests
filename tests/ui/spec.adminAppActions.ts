@@ -10,7 +10,7 @@ import dayjs, { Dayjs } from 'dayjs';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
-test.describe.serial('Действия с приложениями в подразделе администрирования "Приложения"', async () => {
+test.describe.serial('Действия с приложениями в подразделе "Приложения"', async () => {
   test.beforeEach(async ({ loginPage }) => {
     await test.step('Авторизуемся', async () => {
       await loginPage.goToAuthorizedPage('/login', getMainUser());
@@ -136,6 +136,9 @@ test.describe.serial('Действия с приложениями в подра
     await test.step('Сохраняем изменения приложения', async () => {
       await applicationsPage.appPage.saveBtn.click();
       appModificationDate = dayjs(); // Временем создания является время отправки запроса
+      await expect(applicationsPage.appPage.actionAlert).toHaveText('Приложение успешно обновлено', {
+        timeout: 5000,
+      });
       await page.waitForLoadState('load');
       await expect(directoryPage.appModal.modalTitle).toBeHidden({ timeout: 10000 });
     });
@@ -181,7 +184,7 @@ test.describe.serial('Действия с приложениями в подра
 
         await expect(commonPage.contentLoader).toBeHidden();
       });
-      await test.step('Ищем событие создания приложения', async () => {
+      await test.step('Ищем событие изменения приложения', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();
         await page.getByRole('menuitem', { name: 'Update' }).click();
         await expect(commonPage.contentLoader).toBeHidden({ timeout: 10000 });
@@ -194,7 +197,7 @@ test.describe.serial('Действия с приложениями в подра
 
         await expect(logsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
       });
-      await test.step('Проверяем лог создания приложения', async () => {
+      await test.step('Проверяем лог изменения приложения', async () => {
         const createDirLogInfo: EventLogInfo = {
           event: 'Update',
           time: appModificationDate,
@@ -259,7 +262,7 @@ test.describe.serial('Действия с приложениями в подра
         .nth(1)
         .click();
 
-      await test.step('Проверяем модальное окно удаления prilo]eniq', async () => {
+      await test.step('Проверяем модальное окно удаления приложения', async () => {
         await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
           'Удаление приложения'
         );
@@ -281,7 +284,6 @@ test.describe.serial('Действия с приложениями в подра
 
     await test.step('Проверяем логи в журнале событий', async () => {
       await test.step('Переходим в "События"', async () => {
-        await commonPage.sideMenu.adminBtn.click();
         await commonPage.adminLinksMenu.logsLink.click();
         await page.waitForLoadState('load');
 

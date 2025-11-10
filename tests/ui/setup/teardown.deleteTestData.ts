@@ -121,6 +121,31 @@ teardown('Чистим тестовые данные', async ({ request, data })
     }
   });
 
+  await teardown.step('Удаляем тестовые приложения', async () => {
+    const apps = [data.application_crud, data.application_admin_crud];
+    for (let app of apps) {
+      if (app !== undefined) {
+        const responseData = await getList('/api/v0/admin/applications', app.name);
+
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const lApp: any = responseData.list[i];
+            response = await request.post('/api/v0/admin/applications/delete', {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+              data: { applicationIds: [lApp.id] },
+            });
+          }
+
+          if (response.status() !== 200) {
+            throw Error(response.statusText());
+          } else {
+            console.log(await response.json());
+          }
+        }
+      }
+    }
+  });
+
   async function getList(path: string, query: string) {
     response = await request.post(path, {
       headers: { authorization: process.env.BI_TOKEN || '' },
