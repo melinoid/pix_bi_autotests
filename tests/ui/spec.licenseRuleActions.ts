@@ -92,6 +92,7 @@ test.describe.serial('Действия с правилами распредел�
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(licenseRule.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -243,6 +244,7 @@ test.describe.serial('Действия с правилами распредел�
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(oldLicenseRule.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -462,6 +464,7 @@ test.describe.serial('Действия с правилами распредел�
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(licenseRule.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);

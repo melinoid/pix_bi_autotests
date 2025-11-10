@@ -166,6 +166,7 @@ test.describe.serial('Действия с LDAP импортом пользова
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(ldapConnector.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersImportPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -460,6 +461,7 @@ test.describe.serial('Действия с LDAP импортом пользова
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(ldapConnector.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersImportPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);

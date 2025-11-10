@@ -69,6 +69,7 @@ test.describe.serial('Действия с директориями', async () =>
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(directory.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(directoriesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -164,6 +165,7 @@ test.describe.serial('Действия с директориями', async () =>
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(oldDirectory.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(directoriesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -288,6 +290,7 @@ test.describe.serial('Действия с директориями', async () =>
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(directory.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(directoriesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);

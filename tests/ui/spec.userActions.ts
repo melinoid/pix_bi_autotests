@@ -86,6 +86,7 @@ test.describe('Действия с пользователями', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(user.username);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -218,6 +219,7 @@ test.describe('Действия с пользователями', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(oldUser.username);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -401,6 +403,7 @@ test.describe('Действия с пользователями', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(user.username);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);

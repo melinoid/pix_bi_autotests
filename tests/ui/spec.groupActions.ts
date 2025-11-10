@@ -71,6 +71,7 @@ test.describe.serial('Действия с группами', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(group.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -92,7 +93,7 @@ test.describe.serial('Действия с группами', async () => {
       // Вытягиваем ID созданной группы из ссылки
       await groupRow.locator('button').nth(0).click();
       group.id = page.url().split('/edit/')[1];
-      
+
       // Записываем группу для дальнейших тестов
       writeData('group_crud', group);
     });
@@ -174,6 +175,7 @@ test.describe.serial('Действия с группами', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(oldGroup.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
@@ -306,6 +308,7 @@ test.describe.serial('Действия с группами', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(group.name);
+      await page.keyboard.press('Enter');
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
