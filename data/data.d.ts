@@ -42,7 +42,7 @@ export interface LDAP {
     user_object_class: string;
     group_object_class: string;
   };
-  metadata?: MetaData;
+  metadata: MetaData;
 }
 
 export interface Group {
@@ -51,7 +51,7 @@ export interface Group {
   description?: string;
   type?: 'local' | 'ldap';
   import_source?: string;
-  metadata?: MetaData;
+  metadata: MetaData;
 }
 
 export interface User {
@@ -69,7 +69,7 @@ export interface User {
   ad_user_id?: string;
   bi_user_id?: string;
   import_source: string;
-  metadata?: MetaData & {
+  metadata: MetaData & {
     last_login_date?: Date;
   };
 }
@@ -82,7 +82,7 @@ export interface LicenseRule {
   new_user_apply?: boolean;
   license_type: 'Pro' | 'Base';
   user_filter: string[][];
-  metadata?: MetaData;
+  metadata: MetaData;
 }
 
 export interface RlsOmit {
@@ -94,14 +94,14 @@ export interface RlsOmit {
   user_filter: string[][];
   rls_filter?: string[][];
   omit_filter?: string[][];
-  metadata?: MetaData;
+  metadata: MetaData;
 }
 
 export interface Directory {
   id?: string;
   name: string;
   description?: string;
-  metadata?: MetaData;
+  metadata: MetaData;
 }
 
 export interface Application {
@@ -110,5 +110,19 @@ export interface Application {
   description?: string;
   directory_id?: string;
   directory_name?: string;
+  metadata: MetaData;
+}
+
+export interface AdminRule {
+  id?: string;
+  name: string;
+  description?: string;
+  metadata: MetaData;
+}
+
+export interface AccessRule {
+  id?: string;
+  name: string;
+  description?: string;
   metadata: MetaData;
 }

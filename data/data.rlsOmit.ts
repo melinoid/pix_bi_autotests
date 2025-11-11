@@ -4,7 +4,7 @@ import { RlsOmit } from './data';
 /** Всё связанное с тестовыми данными ограничений RLS/OMIT. */
 export default class RlsOmitsTD {
   /**
-   * Генерация ограничения.
+   * Генерация данных rls/omit ограничения.
    * @returns объект с данными ограничения.
    */
   static async createRestriction() {

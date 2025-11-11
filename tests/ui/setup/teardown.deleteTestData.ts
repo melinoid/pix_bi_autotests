@@ -1,21 +1,19 @@
-import { getMainUser } from '../../../utils/config';
 import { test as teardown } from '../../../utils/fixtures';
 import { APIResponse } from '@playwright/test';
 
 // На случай, если сущности созданы, но не удалены из системы, удаляем их через api
 teardown('Чистим тестовые данные', async ({ request, data }) => {
   let response: APIResponse;
-  const mainUser = getMainUser();
 
   await teardown.step('Получаем токен для запросов', async () => {
     response = await request.post('/api/v0/token', {
-      data: { userName: mainUser.username, password: mainUser.password },
+      data: { userName: process.env.BI_USERNAME, password: process.env.BI_PASSWORD },
     });
     process.env['BI_TOKEN'] = `Bearer ${(await response.json())?.accessToken}`;
   });
 
   await teardown.step('Удаляем тестовых пользователей', async () => {
-    const users = [data.user_crud];
+    const users = [data.user_crud, data.main_user];
     for (let user of users) {
       if (user !== undefined) {
         const responseData = await getList('/api/v0/users/list', user.username);
@@ -23,7 +21,7 @@ teardown('Чистим тестовые данные', async ({ request, data })
         if (responseData.totalCount) {
           for (let i = 0; i < responseData.totalCount; i++) {
             const item: any = responseData.list[i];
-            response = await request.post('/api/v0/users/delete', {
+            response = await request.post('/api/v0/admin/users/delete', {
               headers: { authorization: process.env.BI_TOKEN || '' },
               data: { ids: [`${item.id}`] },
             });
@@ -155,6 +153,54 @@ teardown('Чистим тестовые данные', async ({ request, data })
             throw Error(response.statusText());
           } else {
             console.log(await response.json());
+          }
+        }
+      }
+    }
+  });
+
+  await teardown.step('Удаляем тестовые правила администрирования', async () => {
+    const adminRules = [data.main_admin_rule];
+    for (let adminRule of adminRules) {
+      if (adminRule !== undefined) {
+        const responseData = await getList('/api/v0/admin/applications', adminRule.name);
+
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const item: any = responseData.list[i];
+            response = await request.delete(`/api/v0/admin/access-rule/${item.id}`, {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+            });
+          }
+
+          if (response.status() !== 200) {
+            throw Error(response.statusText());
+          } else {
+            console.log(await response.json());
+          }
+        }
+      }
+    }
+  });
+
+  await teardown.step('Удаляем тестовые правила доступа', async () => {
+    const accessRules = [data.main_dir_access_rule, data.main_app_access_rule];
+    for (let acessRule of accessRules) {
+      if (acessRule !== undefined) {
+        const responseData = await getList('/api/v0/rules/list', acessRule.name);
+
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const item: any = responseData.list[i];
+            response = await request.delete(`api/v0/rule/${item.id}`, {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+            });
+          }
+
+          if (response.status() !== 200) {
+            throw Error(response.statusText());
+          } else {
+            console.log(await response.text());
           }
         }
       }

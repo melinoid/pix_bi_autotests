@@ -4,7 +4,7 @@ import { Group } from './data';
 /** Всё связанное с тестовыми данными групп. */
 export default class GroupsTD {
   /**
-   * Генерация группы.
+   * Генерация данных группы.
    * @returns объект с данными группы.
    */
   static async createGroup() {

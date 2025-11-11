@@ -1,4 +1,5 @@
 import { User } from '../data/data';
+import { data } from '../data/data.common';
 
 /**
  * Возвращает данные основного пользователя.
@@ -8,9 +9,9 @@ import { User } from '../data/data';
  */
 export function getMainUser() {
   const user = <User>{
-    username: process.env.BI_USERNAME,
-    password: process.env.BI_PASSWORD,
-    id: process.env.BI_USER_ID,
+    username: data.main_user ? data.main_user.username : process.env.BI_USERNAME,
+    password: data.main_user ? data.main_user.password : process.env.BI_PASSWORD,
+    id: data.main_user ? data.main_user.id : process.env.BI_USER_ID,
   };
   if ((user.username || user.email) && user.password && user.id) {
     return user;

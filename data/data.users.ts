@@ -4,7 +4,7 @@ import { User } from './data';
 /** Всё связанное с тестовыми данными пользователей. */
 export default class UsersTD {
   /**
-   * Генерация пользователя.
+   * Генерация данных тестового пользователя.
    * @returns объект с данными пользователя.
    */
   static async createUser() {
@@ -18,6 +18,23 @@ export default class UsersTD {
     user.email = `test_${userUid}@test.ru`;
     user.active = true;
     user.ad_imported = false;
+
+    return user;
+  }
+
+  /**
+   * Генерация данных основного пользователя для прогонов.
+   * @returns объект с данными пользователя.
+   */
+  static async createAdminUser() {
+    let user = <User>{};
+    const userUid = Helper.genUid();
+
+    user.username = 'admin_user_' + userUid;
+    user.password = '9urT@2vUV' + userUid;
+    user.displayed_name = 'Admin User ' + userUid;
+    user.email = `admin_${userUid}@test.ru`;
+    user.active = true;
 
     return user;
   }

@@ -1,10 +1,10 @@
 import Helper from '../utils/helper';
 import { Application } from './data';
 
-/** Всё связанное с тестовыми данными приложения. */
+/** Всё связанное с тестовыми данными приложений. */
 export default class ApplicationTD {
   /**
-   * Генерация приложения.
+   * Генерация данны приложения.
    * @returns объект с данными приложения.
    */
   static async createApplication() {

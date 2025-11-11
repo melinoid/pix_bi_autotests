@@ -4,7 +4,7 @@ import { RlsOmit } from './data';
 /** Всё связанное с тестовыми данными директорий. */
 export default class DirectoriesTD {
   /**
-   * Генерация директории.
+   * Генерация данных директории.
    * @returns объект с данными директории.
    */
   static async createDirectory() {
