@@ -87,6 +87,13 @@ test.describe.serial('Действия с приложениями в подра
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(applicationsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+
+      await expect(page).toHaveScreenshot('applicationsPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Проверяем созданное приложение', async () => {
       const appRow = applicationsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');

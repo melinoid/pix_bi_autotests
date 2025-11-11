@@ -31,9 +31,19 @@
    ```bash
    npx playwright test
    ```
-### Запуск UI тестов:
+### Запуск UI тестов во всех браузерах:
    ```bash
    npx playwright test -g "Smoke"
+   ```
+### Запуск UI тестов в определённом браузере:
+   ```bash
+   npx playwright test --project="Smoke 1.32 Chromium"
+   ```
+   ```bash
+   npx playwright test --project="Smoke 1.32 Firefox"
+   ```
+   ```bash
+   npx playwright test --project="Smoke 1.32 Edge"
    ```
 ### Запуск всех API тестов:
    ```bash
@@ -42,6 +52,7 @@
 ### Запуск тестов в контейнере (необходим установленный docker):
     ```bash
     docker compose up
+    ```
 
 ## Важно
 

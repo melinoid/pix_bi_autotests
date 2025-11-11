@@ -64,6 +64,14 @@ test.describe.serial('Действия с правилами распредел�
 
     await test.step('Переходим к созданию правила распределения', async () => {
       await licenseRulesPage.createRuleBtn.click();
+
+      await page.waitForTimeout(2000);
+      await expect(page).toHaveScreenshot('licenseRuleCreatePage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Заполняем форму правила распределения', async () => {
       await expect(licenseRulesPage.rulePage.pageTitle).toHaveText('Настройка правила распределения лицензий');
@@ -248,6 +256,13 @@ test.describe.serial('Действия с правилами распредел�
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(licenseRulesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+
+      await expect(page).toHaveScreenshot('licenseRulesPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Переходим к изменению правила распределения', async () => {
       await licenseRulesPage.table.body

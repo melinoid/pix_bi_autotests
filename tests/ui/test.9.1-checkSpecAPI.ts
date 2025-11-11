@@ -26,7 +26,7 @@ test('9.1. Специальные API', async ({ page, loginPage, commonPage }) 
     await expect(
       page.locator('div :has-text("Срок действия некоторых лицензии в системе заканчивается")').first()
     ).toBeHidden({ timeout: 6000 });
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(2000)
     // Упрощение логики через скриншот тестирование
     await expect(page).toHaveScreenshot('specialApiPage.png', {
       animations: 'allow',

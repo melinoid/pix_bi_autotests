@@ -59,6 +59,13 @@ test.describe('Действия с пользователями', async () => {
 
     await test.step('Переходим к созданию пользователя', async () => {
       await usersPage.createUserBtn.click();
+      await page.waitForTimeout(2000);
+      await expect(page).toHaveScreenshot('userCreatePage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Заполняем форму пользователя', async () => {
       await usersPage.newUserPage.usernameField.input.fill(user.username);
@@ -90,6 +97,13 @@ test.describe('Действия с пользователями', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+
+      await expect(page).toHaveScreenshot('usersPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Проверяем созданного пользователя', async () => {
       const userRow = usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');

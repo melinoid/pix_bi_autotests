@@ -90,6 +90,14 @@ test.describe.serial('Действия с LDAP импортом пользова
 
     await test.step('Переходим к созданию импорта пользователей', async () => {
       await usersImportPage.createImportBtn.click();
+
+      await page.waitForTimeout(2000);
+      await expect(page).toHaveScreenshot('ldapImportPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Заполняем форму импорта пользователей', async () => {
       await expect(usersImportPage.ldapImportPage.pageTitle).toHaveText('Создать подключение');
@@ -465,6 +473,13 @@ test.describe.serial('Действия с LDAP импортом пользова
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(usersImportPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+
+      await expect(page).toHaveScreenshot('ldapImportsPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Удаляем импорт пользователей', async () => {
       await expect(usersImportPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(0)).toHaveText(
@@ -509,7 +524,7 @@ test.describe.serial('Действия с LDAP импортом пользова
         await page.waitForLoadState('load');
 
         await logsPage.tabs.informationSecurityLogs.click();
-        await expect(commonPage.contentLoader).toBeHidden({timeout: 20000});
+        await expect(commonPage.contentLoader).toBeHidden({ timeout: 20000 });
       });
       await test.step('Ищем событие удаления импортa пользователей', async () => {
         await logsPage.table.head.locator('th.ant-table-cell').nth(0).locator('[data-testid*=table-filter]').click();

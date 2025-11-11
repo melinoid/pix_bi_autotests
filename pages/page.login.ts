@@ -54,7 +54,8 @@ export default class LoginPage {
       '.ant-notification-notice:has-text("Срок действия некоторых лицензии") a[aria-label="Close"]'
     );
     if (await expLicWarn.isVisible()) {
-      expLicWarn.click();
+      await expLicWarn.click();
+      await expect(expLicWarn).toBeHidden();
     }
   }
 

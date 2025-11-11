@@ -53,6 +53,14 @@ test.describe.serial('Действия с директориями', async () =>
 
     await test.step('Переходим к созданию директории', async () => {
       await directoriesPage.createDirBtn.click();
+
+      await page.waitForTimeout(2000);
+      await expect(page).toHaveScreenshot('directoryCreatePage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Заполняем форму директории', async () => {
       await expect(directoriesPage.createDirModal.modalTitle).toHaveText('Создание директории');
@@ -169,6 +177,13 @@ test.describe.serial('Действия с директориями', async () =>
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(directoriesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+
+      await expect(page).toHaveScreenshot('directoriesPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Переходим к редактированию директории', async () => {
       await directoriesPage.table.body

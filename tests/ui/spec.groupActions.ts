@@ -54,6 +54,14 @@ test.describe.serial('Действия с группами', async () => {
 
     await test.step('Переходим к созданию группы', async () => {
       await groupsPage.createGroupBtn.click();
+
+      await page.waitForTimeout(2000);
+      await expect(page).toHaveScreenshot('groupCreatePage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Заполняем форму группы', async () => {
       await expect(groupsPage.groupPage.pageTitle).toHaveText('Создание группы');
@@ -179,6 +187,13 @@ test.describe.serial('Действия с группами', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
 
       await expect(groupsPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
+
+      await expect(page).toHaveScreenshot('groupsPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Переходим к редактированию группы', async () => {
       await groupsPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();

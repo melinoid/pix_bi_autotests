@@ -75,6 +75,13 @@ test.describe.serial('Действия с приложениями в персо
           .locator(':below(h2):right-of(.ant-layout-sider-light) .ant-collapse')
           .locator('//div[contains(@class, "DashboardInList_dashboard")]')
       ).toHaveCount(0);
+
+      await expect(page).toHaveScreenshot('emptyAppPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Ищем созданное приложение в директории', async () => {
       await applicationPage.dirName.click();
@@ -135,7 +142,7 @@ test.describe.serial('Действия с приложениями в персо
     const newApplication = await ApplicationTD.createApplication();
     let appModificationDate: Dayjs;
 
-    await test.step('Ищем подходящую директорию', async () => {
+    await test.step('Ищем подходящее приложение', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await directoryPage.searchInput.fill(oldApplication.name);
       await expect(commonPage.contentLoader).toBeHidden();
@@ -145,6 +152,13 @@ test.describe.serial('Действия с приложениями в персо
           '//div[contains(@class, "DirectoryPage_MainContent")] //div[contains(@class, "ApplicationInList_application")]'
         )
       ).toHaveCount(1);
+
+      await expect(page).toHaveScreenshot('presonalDirectoryPage.png', {
+        animations: 'allow',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.01,
+        scale: 'css',
+      });
     });
     await test.step('Переходим к редактированию приложения', async () => {
       await expect(page.locator('//div[contains(@class, "ApplicationInList_title")]')).toHaveText(oldApplication.name);

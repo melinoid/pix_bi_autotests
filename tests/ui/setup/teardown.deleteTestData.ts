@@ -15,16 +15,43 @@ teardown('Чистим тестовые данные', async ({ request, data })
   });
 
   await teardown.step('Удаляем тестовых пользователей', async () => {
-    if (data.user_crud !== undefined) {
-      const responseData = await getList('/api/v0/users/list', data.user_crud.username);
+    const users = [data.user_crud];
+    for (let user of users) {
+      if (user !== undefined) {
+        const responseData = await getList('/api/v0/users/list', user.username);
 
-      if (responseData.totalCount) {
-        for (let i = 0; i < responseData.totalCount; i++) {
-          const user: any = responseData.list[i];
-          response = await request.post('/api/v0/users/delete', {
-            headers: { authorization: process.env.BI_TOKEN || '' },
-            data: { ids: [`${user.id}`] },
-          });
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const item: any = responseData.list[i];
+            response = await request.post('/api/v0/users/delete', {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+              data: { ids: [`${item.id}`] },
+            });
+
+            if (response.status() !== 200) {
+              throw Error(response.statusText());
+            } else {
+              console.log(await response.json());
+            }
+          }
+        }
+      }
+    }
+  });
+
+  await teardown.step('Удаляем тестовые группы', async () => {
+    const groups = [data.group_crud];
+    for (let group of groups) {
+      if (group !== undefined) {
+        const responseData = await getList('/api/v0/user-groups/list', group.name);
+
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const item: any = responseData.list[i];
+            response = await request.delete(`/api/v0/user-group/${item.id}`, {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+            });
+          }
 
           if (response.status() !== 200) {
             throw Error(response.statusText());
@@ -36,86 +63,74 @@ teardown('Чистим тестовые данные', async ({ request, data })
     }
   });
 
-  await teardown.step('Удаляем тестовые группы', async () => {
-    if (data.group_crud !== undefined) {
-      const responseData = await getList('/api/v0/user-groups/list', data.group_crud.name);
-
-      if (responseData.totalCount) {
-        for (let i = 0; i < responseData.totalCount; i++) {
-          const group: any = responseData.list[i];
-          response = await request.delete(`/api/v0/user-group/${group.id}`, {
-            headers: { authorization: process.env.BI_TOKEN || '' },
-          });
-        }
-
-        if (response.status() !== 200) {
-          throw Error(response.statusText());
-        } else {
-          console.log(await response.json());
-        }
-      }
-    }
-  });
-
   await teardown.step('Удаляем тестовые распределения лицензий', async () => {
-    if (data.license_rule_crud !== undefined) {
-      const responseData = await getList('/api/v0/license/rules/list', data.license_rule_crud.name);
+    const licenseRules = [data.license_rule_crud];
+    for (let licenseRule of licenseRules) {
+      if (licenseRule !== undefined) {
+        const responseData = await getList('/api/v0/license/rules/list', licenseRule.name);
 
-      if (responseData.totalCount) {
-        for (let i = 0; i < responseData.totalCount; i++) {
-          const licenseRule: any = responseData.list[i];
-          response = await request.delete(`/api/v0/license/rule/${licenseRule.id}`, {
-            headers: { authorization: process.env.BI_TOKEN || '' },
-          });
-        }
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const item: any = responseData.list[i];
+            response = await request.delete(`/api/v0/license/rule/${item.id}`, {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+            });
+          }
 
-        if (response.status() !== 200) {
-          throw Error(response.statusText());
-        } else {
-          console.log(await response.json());
+          if (response.status() !== 200) {
+            throw Error(response.statusText());
+          } else {
+            console.log(await response.json());
+          }
         }
       }
     }
   });
 
   await teardown.step('Удаляем тестовые LDAP импорты', async () => {
-    if (data.ldap_connector_crud !== undefined) {
-      const responseData = await getList('/api/v0/settings/user-connector/ldap/list', data.ldap_connector_crud.name);
+    const LdapImports = [data.ldap_connector_crud];
+    for (let ldapImport of LdapImports) {
+      if (ldapImport !== undefined) {
+        const responseData = await getList('/api/v0/settings/user-connector/ldap/list', ldapImport.name);
 
-      if (responseData.totalCount) {
-        for (let i = 0; i < responseData.totalCount; i++) {
-          const ldapConnector: any = responseData.list[i];
-          response = await request.delete(`/api/v0/settings/user-connector/${ldapConnector.id}`, {
-            headers: { authorization: process.env.BI_TOKEN || '' },
-          });
-        }
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const item: any = responseData.list[i];
+            response = await request.delete(`/api/v0/settings/user-connector/${item.id}`, {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+            });
+          }
 
-        if (response.status() !== 200) {
-          throw Error(response.statusText());
-        } else {
-          console.log(await response.json());
+          if (response.status() !== 200) {
+            throw Error(response.statusText());
+          } else {
+            console.log(await response.json());
+          }
         }
       }
     }
   });
 
   await teardown.step('Удаляем тестовые директории', async () => {
-    if (data.directory_crud !== undefined) {
-      const responseData = await getList('/api/v0/admin/directories', data.directory_crud.name);
+    const dirs = [data.directory_crud];
+    for (let dir of dirs) {
+      if (dir !== undefined) {
+        const responseData = await getList('/api/v0/admin/directories', dir.name);
 
-      if (responseData.totalCount) {
-        for (let i = 0; i < responseData.totalCount; i++) {
-          const directory: any = responseData.list[i];
-          response = await request.post('/api/v0/admin/directories/delete', {
-            headers: { authorization: process.env.BI_TOKEN || '' },
-            data: { directoryIds: [directory.id] },
-          });
-        }
+        if (responseData.totalCount) {
+          for (let i = 0; i < responseData.totalCount; i++) {
+            const item: any = responseData.list[i];
+            response = await request.post('/api/v0/admin/directories/delete', {
+              headers: { authorization: process.env.BI_TOKEN || '' },
+              data: { directoryIds: [item.id] },
+            });
+          }
 
-        if (response.status() !== 200) {
-          throw Error(response.statusText());
-        } else {
-          console.log(await response.json());
+          if (response.status() !== 200) {
+            throw Error(response.statusText());
+          } else {
+            console.log(await response.json());
+          }
         }
       }
     }
@@ -129,10 +144,10 @@ teardown('Чистим тестовые данные', async ({ request, data })
 
         if (responseData.totalCount) {
           for (let i = 0; i < responseData.totalCount; i++) {
-            const lApp: any = responseData.list[i];
+            const item: any = responseData.list[i];
             response = await request.post('/api/v0/admin/applications/delete', {
               headers: { authorization: process.env.BI_TOKEN || '' },
-              data: { applicationIds: [lApp.id] },
+              data: { applicationIds: [item.id] },
             });
           }
 
