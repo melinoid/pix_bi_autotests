@@ -18,4 +18,4 @@ RUN npx playwright install --with-deps && \
     mv node_modules / && \
     ln -s /node_modules ./node_modules
 
-CMD /bin/sh -c 'npx playwright test --project="Smoke 1.32 Chromium" && npx playwright test --project="API Tests 32"'
+CMD /bin/sh -c 'npx playwright test --project="Smoke 1.32 Chromium"; npx playwright test --project="API Tests 32"'

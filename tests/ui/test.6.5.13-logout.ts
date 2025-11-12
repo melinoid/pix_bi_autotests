@@ -30,8 +30,13 @@ test('6.5.13. Выход из системы', async ({ page, loginPage, mainPag
     if (hour > 12) helloText = 'Добрый день';
     if (hour > 16) helloText = 'Добрый вечер';
     if (hour > 21 || hour < 4) helloText = 'Доброй ночи';
+    try {
+      await expect(mainPage.pageTitle).toHaveText(`${helloText}, ${mainUser.displayed_name || mainUser.username}`);
+    }
+    catch (e) {
+      throw Error(`Час на момент теста: ${hour}\n ${e}`)
+    }
 
-    await expect(mainPage.pageTitle).toHaveText(`${helloText}, ${mainUser.displayed_name || mainUser.username}`);
   });
   await test.step('Выходим из системы', async () => {
     await page.waitForTimeout(500);
