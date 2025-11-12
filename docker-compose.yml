@@ -1,4 +1,3 @@
-# docker-compose.yml
 services:
   autotests:
     image: bi_tests:latest
@@ -7,6 +6,8 @@ services:
       dockerfile: .tools/Dockerfile
     volumes:
       - .:/autotests
+      - ./test-results:/autotests/test-results
+      - ./.temp:/autotests/.temp
     environment:
       - WORKERS_COUNT
       - BI_URL

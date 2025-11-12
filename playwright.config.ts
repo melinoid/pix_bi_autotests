@@ -52,7 +52,7 @@ export default defineConfig({
     {
       name: 'Remove UI Data 32',
       testMatch: '**/ui/setup/teardown.deleteTestData.ts',
-      timeout: 6000,
+      timeout: 60000,
       use: { ...devices['Desktop Chrome'] },
     },
 
