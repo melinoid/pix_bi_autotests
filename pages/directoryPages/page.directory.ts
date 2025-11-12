@@ -22,7 +22,7 @@ export default class DirectoryPage {
     this.page = page;
 
     this.pageDirName = page.locator(':right-of(.ant-menu) :above(input.ant-input-outlined) h2');
-    this.addAppBtn = page.locator(':right-of(h2) button.ant-btn-primary');
+    this.addAppBtn = page.locator(':right-of(.ant-menu-light) button.ant-btn-primary');
 
     this.searchInput = page.getByTestId('directory-page-search-input');
 

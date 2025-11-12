@@ -6,9 +6,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  workers: 1,
+  workers: process.env.WORKERS_COUNT !== undefined ? +process.env.WORKERS_COUNT : 1,
   reporter: 'list',
-  timeout: 180000,
+  timeout: 120000,
   snapshotPathTemplate: '{testDir}/screenshots/{testFilePath}/{arg}{ext}',
   use: {
     locale: 'ru-RU',

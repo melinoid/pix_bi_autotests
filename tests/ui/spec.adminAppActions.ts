@@ -11,9 +11,9 @@ var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 test.describe.serial('Действия с приложениями в подразделе "Приложения"', async () => {
-  test.beforeEach(async ({ loginPage }) => {
+  test.beforeEach(async ({ loginPage }, testInfo) => {
     await test.step('Авторизуемся', async () => {
-      await loginPage.goToAuthorizedPage('/login', getMainUser());
+      await loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
     });
   });
 
@@ -46,7 +46,8 @@ test.describe.serial('Действия с приложениями в подра
     directoryPage,
     applicationsPage,
     logsPage,
-  }) => {
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let oldApplication: Application = await ApplicationTD.createApplication();
     let newApplication: Application = await ApplicationTD.createApplication();
     let appCreationDate: Dayjs;
@@ -102,9 +103,9 @@ test.describe.serial('Действия с приложениями в подра
       // Описание
       await expect(appRow.nth(2)).toHaveText(`${oldApplication.description}`);
       // Директория
-      await expect(appRow.nth(3)).toHaveText(`${getMainUser().username} (Персональная)`);
+      await expect(appRow.nth(3)).toHaveText(`${mainUser.username} (Персональная)`);
       // Автор
-      await expect(appRow.nth(4)).toHaveText(getMainUser().username);
+      await expect(appRow.nth(4)).toHaveText(mainUser.username);
       // Опубликовано
       await expect(appRow.nth(5)).toBeEmpty();
       // Создано
@@ -134,7 +135,7 @@ test.describe.serial('Действия с приложениями в подра
       await applicationsPage.appPage.descriptionField.input.fill(`${newApplication.description}`);
 
       await expect(page.locator('form :below(.ant-form-item).ant-space article').nth(0)).toHaveText(
-        `Автор: ${getMainUser().username}`
+        `Автор: ${mainUser.username}`
       );
       await expect(page.locator('form :below(.ant-form-item).ant-space article').nth(1)).toContainText(
         `Дата создания: ${appCreationDate.format('DD.MM.YYYY HH:mm')}`
@@ -164,9 +165,9 @@ test.describe.serial('Действия с приложениями в подра
       // Описание
       await expect(appRow.nth(2)).toHaveText(`${newApplication.description}`);
       // Директория
-      await expect(appRow.nth(3)).toHaveText(`${getMainUser().username} (Персональная)`);
+      await expect(appRow.nth(3)).toHaveText(`${mainUser.username} (Персональная)`);
       // Автор
-      await expect(appRow.nth(4)).toHaveText(getMainUser().username);
+      await expect(appRow.nth(4)).toHaveText(mainUser.username);
       // Опубликовано
       await expect(appRow.nth(5)).toBeEmpty();
       // Создано
@@ -213,6 +214,8 @@ test.describe.serial('Действия с приложениями в подра
           operObjectName: newApplication.name,
           operObjectAddress: `${newApplication.id}`,
           message: 'Application was edited',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });
@@ -236,7 +239,8 @@ test.describe.serial('Действия с приложениями в подра
     applicationsPage,
     logsPage,
     data,
-  }) => {
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const application: Application = data.application_admin_crud;
     let appDeletionDate: Dayjs;
 
@@ -318,6 +322,8 @@ test.describe.serial('Действия с приложениями в подра
           operObjectName: application.name,
           operObjectAddress: `${application.id}`,
           message: 'Application was deleted',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });

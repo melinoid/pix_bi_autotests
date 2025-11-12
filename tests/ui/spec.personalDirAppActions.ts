@@ -11,9 +11,9 @@ var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 test.describe.serial('Действия с приложениями в персональной директории', async () => {
-  test.beforeEach(async ({ page, loginPage, commonPage }) => {
+  test.beforeEach(async ({ page, loginPage, commonPage }, testInfo) => {
     await test.step('Авторизуемся', async () => {
-      await loginPage.goToAuthorizedPage('/login', getMainUser());
+      await loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
     });
     await test.step('Переходим в раздел "Директории"', async () => {
       await commonPage.sideMenu.dirsBtn.click();
@@ -48,7 +48,8 @@ test.describe.serial('Действия с приложениями в персо
     directoryPage,
     applicationPage,
     logsPage,
-  }) => {
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let application: Application = await ApplicationTD.createApplication();
     let appCreationDate: Dayjs;
 
@@ -128,6 +129,8 @@ test.describe.serial('Действия с приложениями в персо
           operObjectName: application.name,
           operObjectAddress: `${application.id}`,
           message: 'Application was created',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });
@@ -137,7 +140,8 @@ test.describe.serial('Действия с приложениями в персо
   /* Create: 10.11.2025
   Тест-кейс на проверку редактирования приложенияв директории отсутствует */
 
-  test('Редактирование приложения', async ({ page, commonPage, directoryPage, applicationPage, logsPage, data }) => {
+  test('Редактирование приложения', async ({ page, commonPage, directoryPage, logsPage, data }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const oldApplication = data.application_crud;
     const newApplication = await ApplicationTD.createApplication();
     let appModificationDate: Dayjs;
@@ -223,6 +227,8 @@ test.describe.serial('Действия с приложениями в персо
           operObjectName: newApplication.name,
           operObjectAddress: `${newApplication.id}`,
           message: 'Application was edited',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });
@@ -255,7 +261,8 @@ test.describe.serial('Действия с приложениями в персо
     directoryPage,
     logsPage,
     data,
-  }) => {
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const application: Application = data.application_crud;
     let appDeletionDate: Dayjs;
 
@@ -332,6 +339,8 @@ test.describe.serial('Действия с приложениями в персо
           operObjectName: application.name,
           operObjectAddress: `${application.id}`,
           message: 'Application was deleted',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });

@@ -1,62 +1,79 @@
-import { APIResponse, expect } from '@playwright/test';
+import { APIResponse } from '@playwright/test';
 import { test as setup } from '../../../utils/fixtures';
 import { getMainUser } from '../../../utils/config';
-import { User } from '../../../data/data';
 import UsersTD from '../../../data/data.users';
 import { writeData } from '../../../data/data.common';
 import AdminRuleTD from '../../../data/data.adminRule';
 import AccessRuleTD from '../../../data/data.accessRule';
+import fs from 'fs';
 
-setup('Генирируем тестовые данные и пользователя', async ({ request }) => {
+setup('Генирируем тестовые данные и пользователя', async ({ request }, testInfo) => {
   let response: APIResponse;
-  let mainUser: User = await UsersTD.createAdminUser();
 
+  //TODO добавить создание нескольких пользователей и запуск в параллель
   await setup.step('Получаем токен для запросов', async () => {
     const mainUser = getMainUser();
+
+    // Удаляем файл с данными предыдущего прогона
+    try {
+      fs.unlinkSync('.temp/data.json');
+    } catch (e) {}
 
     response = await request.post('/api/v0/token', {
       data: { userName: mainUser.username, password: mainUser.password },
     });
+
+    if (response.status() !== 200) {
+      throw Error('Не удалось получить токен: ' + response.statusText());
+    }
+
     process.env['BI_TOKEN'] = `Bearer ${(await response.json())?.accessToken}`;
   });
 
-  //
   await setup.step('Создаём пользователя', async () => {
-    response = await request.post('/api/v0/user-create', {
-      headers: { authorization: process.env.BI_TOKEN || '' },
-      data: {
-        name: mainUser.username,
-        displayName: mainUser.displayed_name,
-        email: mainUser.email,
-        password: mainUser.password,
-        password_confirm: mainUser.password,
-        inactive: !mainUser.active,
-        forceChangeOnLogin: false,
-        ActiveDirectoryUserName: null,
-        ActiveDirectoryUserSid: null,
-        roles: [],
-      },
-    });
+    // Пользователи создаются под кол-во шоркеров для параллельности
+    for (let i = 0; i < testInfo.config.workers; i++) {
+      let user = await UsersTD.createAdminUser();
+      user.username = user.username;
+      user.displayed_name = user.displayed_name;
+      user.email = user.email;
 
-    if (response.status() !== 200) {
-      throw Error('Пользователь не создан: ' + response.statusText());
-    }
+      response = await request.post('/api/v0/user-create', {
+        headers: { authorization: process.env.BI_TOKEN || '' },
+        data: {
+          name: user.username,
+          displayName: user.displayed_name,
+          email: user.email,
+          password: user.password,
+          password_confirm: user.password,
+          inactive: false,
+          forceChangeOnLogin: false,
+          ActiveDirectoryUserName: null,
+          ActiveDirectoryUserSid: null,
+          roles: [],
+        },
+      });
 
-    mainUser.id = (await response.json()).data.value.id;
-    writeData('main_user', mainUser);
-  });
+      if (response.status() !== 200) {
+        throw Error(`Пользователь ${user} не создан: ${response.statusText()}`);
+      }
 
-  await setup.step('Назначаем пользователю лицензию', async () => {
-    response = await request.post('/api/v0/license-allocation', {
-      headers: { authorization: process.env.BI_TOKEN || '' },
-      data: {
-        licenseType: 'pro',
-        users: [mainUser.id],
-      },
-    });
+      user.id = (await response.json()).data.value.id;
+      writeData(`main_user_${i}`, user);
 
-    if (response.status() !== 200) {
-      throw Error('Лицензия не назначена: ' + response.statusText());
+      await setup.step('Назначаем пользователю лицензию', async () => {
+        response = await request.post('/api/v0/license-allocation', {
+          headers: { authorization: process.env.BI_TOKEN || '' },
+          data: {
+            licenseType: 'pro',
+            users: [user.id],
+          },
+        });
+
+        if (response.status() !== 200) {
+          throw Error('Лицензия не назначена: ' + response.statusText());
+        }
+      });
     }
   });
 
@@ -71,8 +88,8 @@ setup('Генирируем тестовые данные и пользоват�
         userFilter: [
           {
             attribute: 'UserName',
-            values: [mainUser.username],
-            filterType: 'in',
+            values: ['admin_user'],
+            filterType: 'like',
             join: null,
           },
         ],
@@ -233,8 +250,8 @@ setup('Генирируем тестовые данные и пользоват�
         userFilter: [
           {
             attribute: 'UserName',
-            values: [mainUser.username],
-            filterType: 'in',
+            values: ['admin_user'],
+            filterType: 'like',
             join: null,
           },
         ],
@@ -270,8 +287,8 @@ setup('Генирируем тестовые данные и пользоват�
         userFilter: [
           {
             attribute: 'UserName',
-            values: [mainUser.username],
-            filterType: 'in',
+            values: ['admin_user'],
+            filterType: 'like',
             join: null,
           },
         ],

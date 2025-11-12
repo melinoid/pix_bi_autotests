@@ -11,10 +11,10 @@ import UsersTD from '../../data/data.users';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
-test.describe('Действия с пользователями', async () => {
-  test.beforeEach(async ({ page, loginPage, commonPage }) => {
+test.describe.serial('Действия с пользователями', async () => {
+  test.beforeEach(async ({ page, loginPage, commonPage }, testInfo) => {
     await test.step('Авторизуемся', async () => {
-      await loginPage.goToAuthorizedPage('/login', getMainUser());
+      await loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
     });
     await test.step('Переходим в раздел "Администрирование"', async () => {
       await commonPage.sideMenu.adminBtn.click();
@@ -53,7 +53,8 @@ test.describe('Действия с пользователями', async () => {
   11. Проверить поле “Параметры”
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.1. Создание пользователя', async ({ page, commonPage, usersPage, logsPage, helper, data }) => {
+  test('6.1.1. Создание пользователя', async ({ page, commonPage, usersPage, logsPage, helper }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const user: User = await UsersTD.createUser();
     let userCreationDate: Dayjs;
 
@@ -193,6 +194,8 @@ test.describe('Действия с пользователями', async () => {
           operObjectlink: `/admin/users/edit/${user.id}`,
           operObjectName: user.username,
           operObjectAddress: `${user.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
@@ -224,7 +227,15 @@ test.describe('Действия с пользователями', async () => {
     – В новой записи, в колонке “Объект операции” указан отредактированный пользователь
     – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('6.1.2. Редактирование пользователя', async ({ page, commonPage, usersPage, logsPage, data, helper }) => {
+  test('6.1.2. Редактирование пользователя', async ({
+    page,
+    commonPage,
+    usersPage,
+    logsPage,
+    data,
+    helper,
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const oldUser: User = data.user_crud;
     const newUser = await UsersTD.createUser();
     let userModificationDate: Dayjs;
@@ -303,7 +314,7 @@ test.describe('Действия с пользователями', async () => {
       // Дата последнего входа
       await expect(userRow.nth(11)).toBeEmpty();
       // Кем изменён
-      await expect(userRow.nth(12)).toHaveText(getMainUser().username);
+      await expect(userRow.nth(12)).toHaveText(mainUser.username);
       // Внутренний ID
       newUser.id = (await userRow.nth(13).textContent()) || '';
       expect(oldUser.id === newUser.id).toBeTruthy();
@@ -380,6 +391,8 @@ test.describe('Действия с пользователями', async () => {
           operObjectlink: `/admin/users/edit/${oldUser.id}`,
           operObjectName: newUser.username,
           operObjectAddress: `${oldUser.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });
@@ -409,7 +422,8 @@ test.describe('Действия с пользователями', async () => {
   10. Проверить поле “Параметры”
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.3. Удаление пользователя', async ({ page, commonPage, usersPage, logsPage, data }) => {
+  test('6.1.3. Удаление пользователя', async ({ page, commonPage, usersPage, logsPage, data }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const user: User = data.user_crud;
     let userDeletionDate: Dayjs;
 
@@ -479,6 +493,8 @@ test.describe('Действия с пользователями', async () => {
           operObjectlink: `/admin/users/edit/${user.id}`,
           operObjectName: user.username,
           operObjectAddress: `${user.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, userDeleteLogInfo);
       });

@@ -12,9 +12,9 @@ var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 test.describe.serial('Действия с LDAP импортом пользователей', async () => {
-  test.beforeEach(async ({ page, loginPage, commonPage }) => {
+  test.beforeEach(async ({ page, loginPage, commonPage }, testInfo) => {
     await test.step('Авторизуемся', async () => {
-      await loginPage.goToAuthorizedPage('/login', getMainUser());
+      await loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
     });
     await test.step('Переходим в раздел "Администрирование"', async () => {
       await commonPage.sideMenu.adminBtn.click();
@@ -83,8 +83,10 @@ test.describe.serial('Действия с LDAP импортом пользова
     logsPage,
     helper,
     data,
-  }) => {
+  }, testInfo) => {
     test.slow(); // Иногда импорт пользователей провисает
+
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let ldapConnector: LDAP = await LDAPConnectorsTD.createLDAPConnector();
     let ldapConnectorCreationDate: Dayjs;
 
@@ -236,13 +238,15 @@ test.describe.serial('Действия с LDAP импортом пользова
       try {
         await expect(page.locator('.ant-notification-notice-closable')).toBeHidden({ timeout: 120000 });
       } catch (e) {
-        console.warn('Слишком долгий импорт, необходимо удалить прочие импорты или проверить работу импорта.');
+        console.warn(
+          'Слишком долгий импорт, необходимо удалить прочие импорты или проверить работу импорта. Тест 6.1.7 пропущен'
+        );
         test.skip();
       }
     });
     await test.step('Проверяем импортированных пользователей', async () => {
       await usersPage.table.head.locator('th.ant-table-cell').nth(15).locator('button').nth(1).click();
-      await page.locator('.ant-popover-inner input[type=text]').fill(data.ldap_connector_crud.name);
+      await page.locator('.ant-popover-inner input[type=text]').fill(ldapConnector.name);
       await page.keyboard.press('Enter');
       await page.waitForTimeout(2000);
 
@@ -359,7 +363,7 @@ test.describe.serial('Действия с LDAP импортом пользова
           // https://jira.pix.ru/browse/BI-7666
           // await expect(logRow.nth(9)).toHaveText(ldapConnectorId + '');
           // Субъект операции
-          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
+          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(mainUser.username);
           // Адрес субъекта операции
           expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
           // Результат операции
@@ -389,7 +393,7 @@ test.describe.serial('Действия с LDAP импортом пользова
             ldapConnectorLogID = i;
             break;
           } else {
-            throw Error(`Не удалось найти лог импорта: ${data.ldap_connector_crud.name}`);
+            throw Error(`Не удалось найти лог импорта: ${ldapConnector.name}`);
           }
         }
         await test.step('Проверяем лог импорта пользователей', async () => {
@@ -430,7 +434,7 @@ test.describe.serial('Действия с LDAP импортом пользова
             expect(guid).toMatch(helper.regexMasks.guid);
           }
           // Субъект операции
-          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
+          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(mainUser.username);
           // Адрес субъекта операции
           expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
           // Результат операции
@@ -461,7 +465,8 @@ test.describe.serial('Действия с LDAP импортом пользова
     logsPage,
     helper,
     data,
-  }) => {
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let ldapConnector: LDAP = data.ldap_connector_crud;
     let ldapConnectorDeletionDate: Dayjs;
 
@@ -585,7 +590,7 @@ test.describe.serial('Действия с LDAP импортом пользова
           // https://jira.pix.ru/browse/BI-7666
           // await expect(logRow.nth(9)).toHaveText(ldapConnectorId + '');
           // Субъект операции
-          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(getMainUser().username);
+          await expect(logRow.nth(10).locator('a[href*="/admin/users/edit/"]')).toHaveText(mainUser.username);
           // Адрес субъекта операции
           expect(await logRow.nth(11).textContent()).toMatch(helper.regexMasks.guid);
           // Результат операции

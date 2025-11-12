@@ -12,8 +12,12 @@ https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13100
 3. Нажать "Войти"
 - Отображается ошибка "Неправильный логин или пароль" */
 
-test('6.5.1. Авторизация существующего пользователя с неверным паролем', async ({ page, loginPage, commonPage }) => {
-  const user = { username: getMainUser().username, password: 'boba' };
+test('6.5.1. Авторизация существующего пользователя с неверным паролем', async ({
+  page,
+  loginPage,
+  commonPage,
+}, testInfo) => {
+  const user = { username: getMainUser(testInfo.parallelIndex).username, password: 'boba' };
 
   await test.step('Авторизуемся под существующим пользователем с неверным паролем', async () => {
     await page.goto('/login');

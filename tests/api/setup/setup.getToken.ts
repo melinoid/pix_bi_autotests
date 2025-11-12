@@ -9,6 +9,10 @@ setup('Получаем токен для запросов', async ({ request })
   response = await request.post('/api/v0/token', {
     data: { userName: mainUser.username, password: mainUser.password },
   });
-  //TODO: обработать !200, прерывая продолжение последующего проекта
+
+  if (response.status() !== 200) {
+    throw Error('Не удалось получить токен: ' + response.statusText());
+  }
+
   process.env['BI_TOKEN'] = `Bearer ${(await response.json())?.accessToken}`;
 });

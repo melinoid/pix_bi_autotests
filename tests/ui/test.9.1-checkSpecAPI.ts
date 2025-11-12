@@ -8,9 +8,9 @@ https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13159
 1. Открыть подраздел "Специальные API"
 - Отображается список специальных API */
 
-test('9.1. Специальные API', async ({ page, loginPage, commonPage }) => {
+test('9.1. Специальные API', async ({ page, loginPage, commonPage }, testInfo) => {
   await test.step('Авторизуемся', async () => {
-    loginPage.goToAuthorizedPage('/login', getMainUser());
+    loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
   });
   await test.step('Переходим в раздел "Администрирование"', async () => {
     await commonPage.sideMenu.adminBtn.click();
@@ -26,7 +26,7 @@ test('9.1. Специальные API', async ({ page, loginPage, commonPage }) 
     await expect(
       page.locator('div :has-text("Срок действия некоторых лицензии в системе заканчивается")').first()
     ).toBeHidden({ timeout: 6000 });
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(2000);
     // Упрощение логики через скриншот тестирование
     await expect(page).toHaveScreenshot('specialApiPage.png', {
       animations: 'allow',

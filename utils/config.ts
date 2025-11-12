@@ -3,16 +3,26 @@ import { data } from '../data/data.common';
 
 /**
  * Возвращает данные основного пользователя.
- *
- * Содержит имя пользователя и праоль для основной авторизации.
+ * @param wId номер воркера (для main юзеров). При отсутствии возвращает пользователя из глобальных переменных.
  * @returns объект `User`
  */
-export function getMainUser() {
-  const user = <User>{
-    username: data.main_user ? data.main_user.username : process.env.BI_USERNAME,
-    password: data.main_user ? data.main_user.password : process.env.BI_PASSWORD,
-    id: data.main_user ? data.main_user.id : process.env.BI_USER_ID,
-  };
+export function getMainUser(wId?: number) {
+  let user = <User>{};
+  if (wId !== undefined) {
+    user = {
+      username: data[`main_user_${wId}`].username,
+      password: data[`main_user_${wId}`].password,
+      id: data[`main_user_${wId}`].id,
+      displayed_name: data[`main_user_${wId}`].displayed_name,
+    };
+  } else {
+    user = {
+      username: process.env.BI_USERNAME || '',
+      password: process.env.BI_PASSWORD || '',
+      id: process.env.BI_USER_ID,
+      displayed_name: '',
+    };
+  }
   if ((user.username || user.email) && user.password && user.id) {
     return user;
   } else {
@@ -33,6 +43,10 @@ export function getApiToken() {
   }
 }
 
+/**
+ * Возвращает настройки подключения к AD.
+ * @returns объект с настройками.
+ */
 export function getADConfig() {
   const adConfig = {
     user: process.env.AD_USERNAME,

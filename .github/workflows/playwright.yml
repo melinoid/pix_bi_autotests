@@ -10,6 +10,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
+      WORKERS_COUNT: ${{ secrets.WORKERS_COUNT }}
       BI_URL: ${{ secrets.BI_URL }}
       BI_USERNAME: ${{ secrets.BI_USERNAME }}
       BI_PASSWORD: ${{ secrets.BI_PASSWORD }}

@@ -68,8 +68,8 @@ export interface User {
   active?: boolean;
   ad_user_id?: string;
   bi_user_id?: string;
-  import_source: string;
-  metadata: MetaData & {
+  import_source?: string;
+  metadata?: MetaData & {
     last_login_date?: Date;
   };
 }

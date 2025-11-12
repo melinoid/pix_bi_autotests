@@ -19,9 +19,9 @@ try {
  * @param data объект с данными сущности.
  */
 export function writeData(name: string, data: any) {
-  if (typeof jsonData[name] !== 'undefined') {
-    console.log(`Объект с именем ${name} перезаписан в ${dataFile}`);
-  }
+  // if (typeof jsonData[name] !== 'undefined') {
+  //   console.log(`Объект с именем ${name} перезаписан в ${dataFile}`);
+  // }
   jsonData[name] = data;
   fs.writeFileSync(dataFile, JSON.stringify(jsonData, null, 2));
 }

@@ -2,7 +2,6 @@ import { expect, Locator, type Page } from '@playwright/test';
 import { Components } from '../components';
 import dayjs, { Dayjs } from 'dayjs';
 import Helper from '../../utils/helper';
-import { getMainUser } from '../../utils/config';
 
 export interface SecurityLogInfo {
   event: string;
@@ -96,11 +95,11 @@ export default class LogsPage {
     // Адрес объекта операции
     await expect(logRow.nth(9)).toHaveText(logInfo.operObjectAddress);
     // Субъект операции
-    await expect(
-      logRow.nth(10).locator(`a[href="/admin/users/edit/${logInfo.operSubjectAddress || getMainUser().id}"]`)
-    ).toHaveText(logInfo.operSubjectName || getMainUser().username);
+    await expect(logRow.nth(10).locator(`a[href="/admin/users/edit/${logInfo.operSubjectAddress}"]`)).toHaveText(
+      `${logInfo.operSubjectName}`
+    );
     // Адрес субъекта операции
-    await expect(logRow.nth(11)).toHaveText(`${logInfo.operSubjectAddress || getMainUser().id}`);
+    await expect(logRow.nth(11)).toHaveText(`${logInfo.operSubjectAddress}`);
     // Результат операции
     await expect(logRow.nth(12)).toHaveText(logInfo.result || 'Success');
   }
@@ -114,11 +113,11 @@ export default class LogsPage {
       Math.abs(logInfo.time.diff(dayjs(await logRow.nth(1).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
     ).toBeLessThanOrEqual(7);
     // Пользователь
-    await expect(
-      logRow.nth(2).locator(`a[href="/admin/users/edit/${logInfo.operSubjectAddress || getMainUser().id}"]`)
-    ).toHaveText(logInfo.operSubjectAddress || getMainUser().id + '');
+    await expect(logRow.nth(2).locator(`a[href="/admin/users/edit/${logInfo.operSubjectAddress}"]`)).toHaveText(
+      `${logInfo.operSubjectAddress}`
+    );
     // Имя пользователя
-    await expect(logRow.nth(3)).toHaveText(logInfo.operSubjectName || getMainUser().username);
+    await expect(logRow.nth(3)).toHaveText(`${logInfo.operSubjectName}`);
     // Объект
     await expect(logRow.nth(4)).toHaveText(`${logInfo.operObjectType}: ${logInfo.operObjectName}`);
     await expect(logRow.nth(4).locator(`a[href="${logInfo.operObjectlink}"]`)).toHaveText(logInfo.operObjectName);

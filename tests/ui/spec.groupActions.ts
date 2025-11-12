@@ -11,9 +11,9 @@ var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 test.describe.serial('Действия с группами', async () => {
-  test.beforeEach(async ({ page, loginPage, commonPage }) => {
+  test.beforeEach(async ({ page, loginPage, commonPage }, testInfo) => {
     await test.step('Авторизуемся', async () => {
-      await loginPage.goToAuthorizedPage('/login', getMainUser());
+      await loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
     });
     await test.step('Переходим в раздел "Администрирование"', async () => {
       await commonPage.sideMenu.adminBtn.click();
@@ -48,7 +48,8 @@ test.describe.serial('Действия с группами', async () => {
   9. Проверить поле “Параметры”
   – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.4. Создание группы', async ({ page, commonPage, groupsPage, logsPage }) => {
+  test('6.1.4. Создание группы', async ({ page, commonPage, groupsPage, logsPage }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let group: Group = await GroupsTD.createGroup();
     let groupCreationDate: Dayjs;
 
@@ -139,6 +140,8 @@ test.describe.serial('Действия с группами', async () => {
           operObjectlink: `/admin/groups/edit/${group.id}`,
           operObjectName: group.name,
           operObjectAddress: `${group.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, groupCreateLogInfo);
       });
@@ -174,7 +177,8 @@ test.describe.serial('Действия с группами', async () => {
   12. Проверить поле “Параметры”
   – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.5. Редактирование группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
+  test('6.1.5. Редактирование группы', async ({ page, commonPage, groupsPage, logsPage, data }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const oldGroup = data.group_crud;
     const newGroup = await GroupsTD.createGroup();
     let groupModificationDate: Dayjs;
@@ -286,6 +290,8 @@ test.describe.serial('Действия с группами', async () => {
           operObjectlink: `/admin/groups/edit/${oldGroup.id}`,
           operObjectName: newGroup.name,
           operObjectAddress: `${oldGroup.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, groupUpdateLogInfo);
       });
@@ -315,7 +321,8 @@ test.describe.serial('Действия с группами', async () => {
   10. Проверить поле “Параметры”
   - В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.1.6. Удаление группы', async ({ page, commonPage, groupsPage, logsPage, data }) => {
+  test('6.1.6. Удаление группы', async ({ page, commonPage, groupsPage, logsPage, data }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const group: Group = data.group_crud;
     let groupDeletionDate: Dayjs;
 
@@ -387,6 +394,8 @@ test.describe.serial('Действия с группами', async () => {
           operObjectlink: `/admin/groups/edit/${group.id}`,
           operObjectName: group.name,
           operObjectAddress: `${group.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, groupDeleteLogInfo);
       });

@@ -13,7 +13,13 @@ teardown('Чистим тестовые данные', async ({ request, data })
   });
 
   await teardown.step('Удаляем тестовых пользователей', async () => {
-    const users = [data.user_crud, data.main_user];
+    const users = [
+      data.user_crud,
+      // Получаем всех main юзеров для удаления
+      ...Object.keys(data)
+        .filter(key => key.includes('main_user'))
+        .map(key => data[key]),
+    ];
     for (let user of users) {
       if (user !== undefined) {
         const responseData = await getList('/api/v0/users/list', user.username);
@@ -27,9 +33,9 @@ teardown('Чистим тестовые данные', async ({ request, data })
             });
 
             if (response.status() !== 200) {
-              throw Error(response.statusText());
+              console.log(`Не удалось удалить пользователя ${item.userName}: ${response.statusText()}`);
             } else {
-              console.log(await response.json());
+              console.log(`Пользователь ${item.userName} удалён из системы.`);
             }
           }
         }
@@ -49,12 +55,12 @@ teardown('Чистим тестовые данные', async ({ request, data })
             response = await request.delete(`/api/v0/user-group/${item.id}`, {
               headers: { authorization: process.env.BI_TOKEN || '' },
             });
-          }
 
-          if (response.status() !== 200) {
-            throw Error(response.statusText());
-          } else {
-            console.log(await response.json());
+            if (response.status() !== 200) {
+              console.log(`Не удалось удалить группу ${item.name}: ${response.statusText()}`);
+            } else {
+              console.log(`Группа ${item.name} удалёна из системы.`);
+            }
           }
         }
       }
@@ -73,12 +79,12 @@ teardown('Чистим тестовые данные', async ({ request, data })
             response = await request.delete(`/api/v0/license/rule/${item.id}`, {
               headers: { authorization: process.env.BI_TOKEN || '' },
             });
-          }
 
-          if (response.status() !== 200) {
-            throw Error(response.statusText());
-          } else {
-            console.log(await response.json());
+            if (response.status() !== 200) {
+              console.log(`Не удалось удалить распределение лицензий ${item.name}: ${response.statusText()}`);
+            } else {
+              console.log(`Распределение лицензий ${item.name} удалёно из системы.`);
+            }
           }
         }
       }
@@ -97,12 +103,12 @@ teardown('Чистим тестовые данные', async ({ request, data })
             response = await request.delete(`/api/v0/settings/user-connector/${item.id}`, {
               headers: { authorization: process.env.BI_TOKEN || '' },
             });
-          }
 
-          if (response.status() !== 200) {
-            throw Error(response.statusText());
-          } else {
-            console.log(await response.json());
+            if (response.status() !== 200) {
+              console.log(`Не удалось удалить импорт пользователей ${item.name}: ${response.statusText()}`);
+            } else {
+              console.log(`Импорт пользователей ${item.name} удалён из системы.`);
+            }
           }
         }
       }
@@ -122,12 +128,12 @@ teardown('Чистим тестовые данные', async ({ request, data })
               headers: { authorization: process.env.BI_TOKEN || '' },
               data: { directoryIds: [item.id] },
             });
-          }
 
-          if (response.status() !== 200) {
-            throw Error(response.statusText());
-          } else {
-            console.log(await response.json());
+            if (response.status() !== 200) {
+              console.log(`Не удалось удалить директорию ${item.name}: ${response.statusText()}`);
+            } else {
+              console.log(`Директория ${item.name} удалёна из системы.`);
+            }
           }
         }
       }
@@ -147,12 +153,12 @@ teardown('Чистим тестовые данные', async ({ request, data })
               headers: { authorization: process.env.BI_TOKEN || '' },
               data: { applicationIds: [item.id] },
             });
-          }
 
-          if (response.status() !== 200) {
-            throw Error(response.statusText());
-          } else {
-            console.log(await response.json());
+            if (response.status() !== 200) {
+              console.log(`Не удалось удалить приложение ${item.name}: ${response.statusText()}`);
+            } else {
+              console.log(`Приложение ${item.name} удалёно из системы.`);
+            }
           }
         }
       }
@@ -163,7 +169,7 @@ teardown('Чистим тестовые данные', async ({ request, data })
     const adminRules = [data.main_admin_rule];
     for (let adminRule of adminRules) {
       if (adminRule !== undefined) {
-        const responseData = await getList('/api/v0/admin/applications', adminRule.name);
+        const responseData = await getList('api/v0/admin/access-rule/list', adminRule.name);
 
         if (responseData.totalCount) {
           for (let i = 0; i < responseData.totalCount; i++) {
@@ -171,12 +177,12 @@ teardown('Чистим тестовые данные', async ({ request, data })
             response = await request.delete(`/api/v0/admin/access-rule/${item.id}`, {
               headers: { authorization: process.env.BI_TOKEN || '' },
             });
-          }
 
-          if (response.status() !== 200) {
-            throw Error(response.statusText());
-          } else {
-            console.log(await response.json());
+            if (response.status() !== 200) {
+              console.log(`Не удалось удалить правило администрирования ${item.name}: ${response.statusText()}`);
+            } else {
+              console.log(`Правило администрирования ${item.name} удалёно из системы.`);
+            }
           }
         }
       }
@@ -195,18 +201,22 @@ teardown('Чистим тестовые данные', async ({ request, data })
             response = await request.delete(`api/v0/rule/${item.id}`, {
               headers: { authorization: process.env.BI_TOKEN || '' },
             });
-          }
 
-          if (response.status() !== 200) {
-            throw Error(response.statusText());
-          } else {
-            console.log(await response.text());
+            if (response.status() !== 200) {
+              console.log(`Не удалось удалить правило доступа ${item.name}: ${response.statusText()}`);
+            } else {
+              console.log(`Правило доступа ${item.name} удалёно из системы.`);
+            }
           }
         }
       }
     }
   });
 
+  /**
+   * Парсит полученные данные из списка сущностей в ответе запроса.
+   * @returns списос сущностей с их кол-вом.
+   */
   async function getList(path: string, query: string) {
     response = await request.post(path, {
       headers: { authorization: process.env.BI_TOKEN || '' },

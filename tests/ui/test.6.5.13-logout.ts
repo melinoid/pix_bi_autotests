@@ -15,10 +15,12 @@ https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?selected=13112
 4. Нажать кнопку "Выход" в левом нижнем углу экрана"
 - Пользователь деавторизован; Открыта страница авторизации */
 
-test('6.5.13. Выход из системы', async ({ page, loginPage, mainPage, commonPage, baseURL }) => {
+test('6.5.13. Выход из системы', async ({ page, loginPage, mainPage, commonPage, baseURL }, testInfo) => {
+  const mainUser = getMainUser(testInfo.parallelIndex);
+
   await test.step('Авторизуемся под существующим пользователем с неверным паролем', async () => {
     await page.goto('/login');
-    await loginPage.authorization(getMainUser());
+    await loginPage.authorization(mainUser);
 
     await expect(loginPage.loginForm.loader).toBeHidden();
   });
@@ -29,7 +31,7 @@ test('6.5.13. Выход из системы', async ({ page, loginPage, mainPag
     if (hour > 16) helloText = 'Добрый вечер';
     if (hour > 21 || hour < 4) helloText = 'Доброй ночи';
 
-    await expect(mainPage.pageTitle).toHaveText(`${helloText}, ${getMainUser().username}`);
+    await expect(mainPage.pageTitle).toHaveText(`${helloText}, ${mainUser.displayed_name || mainUser.username}`);
   });
   await test.step('Выходим из системы', async () => {
     await page.waitForTimeout(500);

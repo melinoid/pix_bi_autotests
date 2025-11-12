@@ -11,9 +11,9 @@ var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 test.describe.serial('Действия с директориями', async () => {
-  test.beforeEach(async ({ page, loginPage, commonPage }) => {
+  test.beforeEach(async ({ page, loginPage, commonPage }, testInfo) => {
     await test.step('Авторизуемся', async () => {
-      await loginPage.goToAuthorizedPage('/login', getMainUser());
+      await loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
     });
     await test.step('Переходим в раздел "Администрирование"', async () => {
       await commonPage.sideMenu.adminBtn.click();
@@ -46,9 +46,9 @@ test.describe.serial('Действия с директориями', async () =>
   – В новой записи, в колонке “Объект операции” указана созданная директория
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('2.1.6. Создание директории', async ({ page, commonPage, directoriesPage, logsPage }) => {
+  test('2.1.6. Создание директории', async ({ page, commonPage, directoriesPage, logsPage }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let directory: Directory = await DirectoriesTD.createDirectory();
-    writeData('directory_crud', directory);
     let dirCreationDate: Dayjs;
 
     await test.step('Переходим к созданию директории', async () => {
@@ -89,7 +89,7 @@ test.describe.serial('Действия с директориями', async () =>
       // Описание
       await expect(directoryRow.nth(2)).toHaveText(`${directory.description}`);
       // Автор
-      await expect(directoryRow.nth(3)).toHaveText(getMainUser().username);
+      await expect(directoryRow.nth(3)).toHaveText(mainUser.username);
       // Количество приложений
       await expect(directoryRow.nth(4)).toHaveText('0');
       // Создана
@@ -105,7 +105,7 @@ test.describe.serial('Действия с директориями', async () =>
       directory.id = page.url().split('/directories/')[1];
       // Записываем директорию для дальнейших тестов
       directory.metadata = { created_at: dirCreationDate.format('DD.MM.YYYY HH:mm:ss') };
-      rewriteData('directory_crud', directory);
+      writeData('directory_crud', directory);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -137,6 +137,8 @@ test.describe.serial('Действия с директориями', async () =>
           operObjectName: directory.name,
           operObjectAddress: `${directory.id}`,
           message: 'Directory was created',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });
@@ -164,7 +166,8 @@ test.describe.serial('Действия с директориями', async () =>
   – В новой записи, в колонке “Объект операции” указана измененная директория
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('2.1.7. Редактирование директории', async ({ page, commonPage, directoriesPage, logsPage, data }) => {
+  test('2.1.7. Редактирование директории', async ({ page, commonPage, directoriesPage, logsPage, data }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const oldDirectory = data.directory_crud;
     const newDirectory = await DirectoriesTD.createDirectory();
     let dirModificationDate: Dayjs;
@@ -218,31 +221,30 @@ test.describe.serial('Действия с директориями', async () =>
 
       await expect(directoriesPage.table.body.locator('tr.ant-table-row')).toHaveCount(1);
     });
-    await test.step('Проверяем изменённую директорию', async () => {
-      await test.step('Проверяем изменённую директорию', async () => {
-        const directoryRow = directoriesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
-        // Название
-        await expect(directoryRow.nth(1)).toHaveText(newDirectory.name);
-        // Описание
-        await expect(directoryRow.nth(2)).toHaveText(`${newDirectory.description}`);
-        // Автор
-        await expect(directoryRow.nth(3)).toHaveText(getMainUser().username);
-        // Количество приложений
-        await expect(directoryRow.nth(4)).toHaveText('0');
-        // Создана
-        await expect(directoryRow.nth(5)).toHaveText(
-          dayjs(oldDirectory.metadata.created_at, 'DD.MM.YYYY HH:mm:ss').format('DD.MM.YYYY')
-        );
-        // Изменена
-        await expect(directoryRow.nth(6)).toHaveText(dirModificationDate.format('DD.MM.YYYY'));
-        // Элементы управления
-        await expect(directoryRow.locator('button').nth(0)).toBeVisible();
-        await expect(directoryRow.locator('button').nth(1)).toBeVisible();
 
-        // Записываем изменённую директории для дальнейших тестов
-        newDirectory.id = oldDirectory.id;
-        rewriteData('directory_crud', newDirectory);
-      });
+    await test.step('Проверяем изменённую директорию', async () => {
+      const directoryRow = directoriesPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+      // Название
+      await expect(directoryRow.nth(1)).toHaveText(newDirectory.name);
+      // Описание
+      await expect(directoryRow.nth(2)).toHaveText(`${newDirectory.description}`);
+      // Автор
+      await expect(directoryRow.nth(3)).toHaveText(mainUser.username);
+      // Количество приложений
+      await expect(directoryRow.nth(4)).toHaveText('0');
+      // Создана
+      await expect(directoryRow.nth(5)).toHaveText(
+        dayjs(oldDirectory.metadata.created_at, 'DD.MM.YYYY HH:mm:ss').format('DD.MM.YYYY')
+      );
+      // Изменена
+      await expect(directoryRow.nth(6)).toHaveText(dirModificationDate.format('DD.MM.YYYY'));
+      // Элементы управления
+      await expect(directoryRow.locator('button').nth(0)).toBeVisible();
+      await expect(directoryRow.locator('button').nth(1)).toBeVisible();
+
+      // Записываем изменённую директории для дальнейших тестов
+      newDirectory.id = oldDirectory.id;
+      rewriteData('directory_crud', newDirectory);
     });
 
     await test.step('Проверяем логи в журнале событий', async () => {
@@ -274,6 +276,8 @@ test.describe.serial('Действия с директориями', async () =>
           operObjectName: newDirectory.name,
           operObjectAddress: `${oldDirectory.id}`,
           message: 'Directory was edited',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });
@@ -297,7 +301,8 @@ test.describe.serial('Действия с директориями', async () =>
   – В новой записи, в колонке “Объект операции” указана удалённая директория
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('2.1.8. Удаление директории', async ({ page, commonPage, directoriesPage, logsPage, data }) => {
+  test('2.1.8. Удаление директории', async ({ page, commonPage, directoriesPage, logsPage, data }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const directory: Directory = data.directory_crud;
     let dirDeletionDate: Dayjs;
 
@@ -371,6 +376,8 @@ test.describe.serial('Действия с директориями', async () =>
           operObjectName: directory.name,
           operObjectAddress: `${directory.id}`,
           message: '',
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkEventLogs(0, createDirLogInfo);
       });

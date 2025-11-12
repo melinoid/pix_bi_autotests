@@ -13,9 +13,9 @@ var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
 test.describe.serial('Действия с правилами распределения лицензий', async () => {
-  test.beforeEach(async ({ page, loginPage, commonPage }) => {
+  test.beforeEach(async ({ page, loginPage, commonPage }, testInfo) => {
     await test.step('Авторизуемся', async () => {
-      await loginPage.goToAuthorizedPage('/login', getMainUser());
+      await loginPage.goToAuthorizedPage('/login', getMainUser(testInfo.parallelIndex));
     });
     await test.step('Переходим в раздел "Администрирование"', async () => {
       await commonPage.sideMenu.adminBtn.click();
@@ -58,7 +58,8 @@ test.describe.serial('Действия с правилами распредел�
   – В колонке “Объект операции” указано созданное правило
   – В колонке “Субъект операции” указан пользователь, под которым выполняется проверка */
 
-  test('6.2.1. Создание распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage }) => {
+  test('6.2.1. Создание распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let licenseRule: LicenseRule = await LicenseRulesTD.createRule();
     let licenseRuleCreationDate: Dayjs;
 
@@ -198,6 +199,8 @@ test.describe.serial('Действия с правилами распредел�
           operObjectlink: `/admin/license-rules/${licenseRule.id}`,
           operObjectName: licenseRule.name,
           operObjectAddress: `${licenseRule.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, licenseRuleCreateLogInfo);
       });
@@ -243,7 +246,8 @@ test.describe.serial('Действия с правилами распредел�
     licenseRulesPage,
     logsPage,
     data,
-  }) => {
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     const oldLicenseRule: LicenseRule = data.license_rule_crud;
     const newLicenseRule = await LicenseRulesTD.createRule();
     let licenseRuleModificationDate: Dayjs;
@@ -434,6 +438,8 @@ test.describe.serial('Действия с правилами распредел�
           operObjectlink: `/admin/license-rules/${oldLicenseRule.id}`,
           operObjectName: newLicenseRule.name,
           operObjectAddress: `${oldLicenseRule.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, licenseRuleUpdateLogInfo);
       });
@@ -471,7 +477,14 @@ test.describe.serial('Действия с правилами распредел�
   11. Проверить поле “Параметры”
   – В поле указаны корректные параметры созданного/отредактированного ресурса */
 
-  test('6.2.3. Удаление распределения лицензий', async ({ page, commonPage, licenseRulesPage, logsPage, data }) => {
+  test('6.2.3. Удаление распределения лицензий', async ({
+    page,
+    commonPage,
+    licenseRulesPage,
+    logsPage,
+    data,
+  }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
     let licenseRule: LicenseRule = data.license_rule_crud;
     let licenseRuleDeletionDate: Dayjs;
 
@@ -546,6 +559,8 @@ test.describe.serial('Действия с правилами распредел�
           operObjectlink: `/admin/license-rules/${licenseRule.id}`,
           operObjectName: licenseRule.name,
           operObjectAddress: `${licenseRule.id}`,
+          operSubjectAddress: mainUser.id,
+          operSubjectName: mainUser.username,
         };
         await logsPage.checkSecurityLogs(0, licenseRuleDeleteLogInfo);
       });
