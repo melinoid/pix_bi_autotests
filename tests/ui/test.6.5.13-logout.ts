@@ -27,7 +27,7 @@ test('6.5.13. Выход из системы', async ({ page, loginPage, mainPag
   await test.step('Проверяем авторизацию', async () => {
     const hour = dayjs().hour();
     let helloText = 'Доброе утро';
-    if (hour > 12) helloText = 'Добрый день';
+    if (hour > 11) helloText = 'Добрый день';
     if (hour > 16) helloText = 'Добрый вечер';
     if (hour > 21 || hour < 4) helloText = 'Доброй ночи';
     try {
