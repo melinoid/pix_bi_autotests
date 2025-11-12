@@ -62,11 +62,11 @@ export default defineConfig({
       testMatch: '**/api/setup/setup.getToken.ts',
     },
 
-    // API скрипты
+    // Технические API скрипты
     {
-      name: 'API Scripts 32',
+      name: 'API Tech Scripts 32',
       timeout: 200000000,
-      testMatch: '**/api/@(suite|test).*.?(c|m)[jt]s?(x)',
+      testMatch: '**/api/technical/@(suite|test).*.?(c|m)[jt]s?(x)',
       dependencies: ['Setup API Data 32'],
       use: {
         extraHTTPHeaders: {
@@ -74,6 +74,14 @@ export default defineConfig({
           'content-type': 'application/json',
         },
       },
+    },
+
+    // API тесты
+    {
+      name: 'API Tests 32',
+      timeout: 30000,
+      testMatch: '**/api/internal/**/@(suite|test).*.?(c|m)[jt]s?(x)',
+      dependencies: ['Setup API Data 32'],
     },
   ],
 });

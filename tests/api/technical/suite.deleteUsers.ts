@@ -19,14 +19,13 @@ test('Clear Users', async ({ request }, testInfo) => {
 
     totalCount = (await response.json())?.totalCount;
     users = (await response.json())?.data;
-
   });
 
   await test.step('Delete users', async () => {
     for (let i = +processId; i < totalCount; i += testInfo.config.workers) {
       const user: any = users[i];
       response = await request.post(`/api/v0/admin/users/delete`, {
-        data: {ids: [user.id]}
+        data: { ids: [user.id] },
       });
       console.log(`${await response.text()} ${i + 1} из ${totalCount}`);
     }
