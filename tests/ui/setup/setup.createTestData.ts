@@ -55,7 +55,7 @@ setup('Генирируем тестовые данные и пользоват�
       });
 
       if (response.status() !== 200) {
-        throw Error(`Пользователь ${user} не создан: ${response.statusText()}`);
+        throw Error(`Пользователь ${user.username} не создан: ${response.statusText()}`);
       }
 
       user.id = (await response.json()).data.value.id;

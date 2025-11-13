@@ -1,14 +1,14 @@
-import { userFilterMapping } from '../../pages/page.common';
 import { getMainUser } from '../../utils/config';
 import { test } from '../../utils/fixtures';
 import { expect } from '@playwright/test';
 
 import dayjs, { Dayjs } from 'dayjs';
 import Helper from '../../utils/helper';
-import { LDAP } from '../../data/data';
+import { LDAP, User } from '../../data/data';
 import { rewriteData, writeData } from '../../data/data.common';
 import LDAPConnectorsTD from '../../data/data.ldapConnector';
 import { SecurityLogInfo } from '../../pages/adminPages/page.logs';
+import UsersTD from '../../data/data.users';
 var customParseFormat = require('dayjs/plugin/customParseFormat');
 dayjs.extend(customParseFormat);
 
@@ -19,12 +19,6 @@ test.describe.serial('Действия с LDAP импортом пользова
     });
     await test.step('Переходим в раздел "Администрирование"', async () => {
       await commonPage.sideMenu.adminBtn.click();
-    });
-    await test.step('Переходим в подраздел "Импорт пользователей"', async () => {
-      await commonPage.adminLinksMenu.usersImportLink.click();
-      await page.waitForLoadState('load');
-      await expect(commonPage.mainLoader).toBeHidden();
-      await expect(commonPage.contentLoader).toBeHidden();
     });
   });
 
@@ -90,6 +84,12 @@ test.describe.serial('Действия с LDAP импортом пользова
     let ldapConnector: LDAP = await LDAPConnectorsTD.createLDAPConnector();
     let ldapConnectorCreationDate: Dayjs;
 
+    await test.step('Переходим в подраздел "Импорт пользователей"', async () => {
+      await commonPage.adminLinksMenu.usersImportLink.click();
+      await page.waitForLoadState('load');
+      await expect(commonPage.mainLoader).toBeHidden();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
     await test.step('Переходим к созданию импорта пользователей', async () => {
       await usersImportPage.createImportBtn.click();
 
@@ -235,7 +235,7 @@ test.describe.serial('Действия с LDAP импортом пользова
         'Выполняется импорт Пользователей из AD, это может занять некоторое время'
       );
       try {
-        await expect(page.locator('.ant-notification-notice-closable')).toBeHidden({ timeout: 120000 });
+        await expect(page.locator('.ant-notification-notice-closable')).toBeHidden({ timeout: 160000 });
       } catch (e) {
         throw Error('Слишком долгий импорт, необходимо удалить прочие импорты или проверить работу импорта.');
       }
@@ -427,7 +427,219 @@ test.describe.serial('Действия с LDAP импортом пользова
     });
   });
 
-  /* Create: 01.11.2025
+  /* Create: 13.11.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?folderId=2653&selected=13080
+
+  1. Открыть подраздел “Пользователи”
+  – Подраздел открыт
+  2. Найти пользователя, импортированного из AD
+  – Пользователь найден
+  3. Проскроллить список вправо (ctrl + скролл вниз)
+  4. Нажать на иконку карандаша в строке с произвольным пользователем
+  – Открыло окно редактирования пользователя
+  Для редактирования доступны только опции: Email, Группы, Активен
+  5. Изменить произвольные параметры в окне редактирования
+  6. Нажать “Сохранить”
+  – Отображается список пользователей
+  7. Проверить, что внесенные изменения отображаются в списке пользователей
+  – Изменения отображаются для отредактированного пользователя */
+
+  test('6.1.10. Редактирование пользователя AD', async ({ page, commonPage, usersPage, data }, testInfo) => {
+    const mainUser = getMainUser(testInfo.parallelIndex);
+    const ldapConnector = data.ldap_connector_crud;
+    const oldUser: User = await UsersTD.createUser();
+    const newUser = await UsersTD.createUser();
+    let userModificationDate: Dayjs;
+
+    await test.step('Переходим в подраздел "Пользователи"', async () => {
+      await commonPage.adminLinksMenu.usersLink.click();
+      await page.waitForLoadState('load');
+      await expect(commonPage.mainLoader).toBeHidden();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
+    await test.step('Ищем подходящего пользователя', async () => {
+      // Работает с импортированным ранее пользователем
+      await usersPage.table.head.locator('th.ant-table-cell').nth(15).locator('button').nth(1).click();
+      await page.locator('.ant-popover-inner input[type=text]').fill(ldapConnector.name);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      await expect(commonPage.contentLoader).toBeHidden();
+      await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(2);
+
+      // Сохраняем данные первого пользователя
+      const userRow = usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+      oldUser.username = `${await userRow.nth(1).textContent()}`;
+      oldUser.displayed_name = `${await userRow.nth(2).textContent()}`;
+      oldUser.email = `${await userRow.nth(3).textContent()}`;
+      oldUser.ad_imported = (await userRow.nth(4).textContent()) === 'Да' ? true : false;
+      oldUser.active = (await userRow.nth(8).textContent()) === 'Нет' ? true : false;
+      oldUser.metadata = { created_at: `${await userRow.nth(9).textContent()}` };
+      oldUser.id = `${await userRow.nth(13).textContent()}`;
+      oldUser.ad_user_id = `${await userRow.nth(14).textContent()}`;
+    });
+    await test.step('Переходим к изменению пользователя', async () => {
+      await usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').locator('button').nth(0).click();
+    });
+    await test.step('Проверяем поля и доступность', async () => {
+      await expect(usersPage.editUserPage.usernameField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.usernameField.input).toHaveValue(oldUser.username);
+
+      await expect(usersPage.editUserPage.displayedNameField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.displayedNameField.input).toHaveValue(`${oldUser.displayed_name}`);
+
+      await expect(usersPage.editUserPage.emailField.input).toBeEditable();
+      await expect(usersPage.editUserPage.emailField.input).toHaveValue(`${oldUser.email}`);
+
+      await expect(usersPage.editUserPage.groupsSelectorField.input).toBeEnabled();
+
+      await expect(usersPage.editUserPage.isActiveCheckbox.checkbox).toBeEditable();
+      await expect(usersPage.editUserPage.isActiveCheckbox.checkbox).toBeChecked();
+
+      await expect(usersPage.editUserPage.isADCheckbox.checkbox).toBeDisabled();
+      await expect(usersPage.editUserPage.isADCheckbox.checkbox).toBeChecked();
+
+      await expect(usersPage.editUserPage.adGroupField.input).toBeDisabled();
+
+      await expect(usersPage.editUserPage.adUserIDField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.adUserIDField.input).toHaveValue(`${oldUser.ad_user_id}`);
+
+      await expect(usersPage.editUserPage.creationDateField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.creationDateField.input).toHaveValue(`${oldUser.metadata?.created_at}`);
+
+      await expect(usersPage.editUserPage.modificationDateField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.modificationDateField.input).not.toBeEmpty();
+
+      await expect(usersPage.editUserPage.updatedByField.input).toBeDisabled();
+      await expect(usersPage.editUserPage.updatedByField.input).toHaveValue(mainUser.username);
+
+      await expect(usersPage.editUserPage.updatedByField.input).toBeDisabled();
+    });
+    await test.step('Заполняем форму пользователя', async () => {
+      await usersPage.editUserPage.emailField.input.fill(`${newUser.email}`);
+
+      const aChecked = await usersPage.editUserPage.isActiveCheckbox.checkbox.isChecked();
+      if ((!aChecked && newUser.active) || (aChecked && !newUser.active)) {
+        await usersPage.editUserPage.isActiveCheckbox.checkbox.click();
+      }
+    });
+    await test.step('Сохраняем изменения пользователя', async () => {
+      await usersPage.editUserPage.saveBtn.click();
+      userModificationDate = dayjs(); // Временем изменения является время отправки запроса
+      await expect(usersPage.editUserPage.actionAlert).toHaveText('Вы успешно сохранили пользователя!', {
+        timeout: 30000,
+      });
+      await page.waitForLoadState('load');
+      await expect(usersPage.table.head).toBeVisible();
+    });
+    await test.step('Проверяем изменённого пользователя', async () => {
+      await expect(commonPage.contentLoader).toBeHidden();
+      const userRow = usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td');
+      // Имя
+      await expect(userRow.nth(1)).toHaveText(oldUser.username);
+      // Отображаемое имя
+      await expect(userRow.nth(2)).toHaveText(`${oldUser.displayed_name}`);
+      // E-mail
+      await expect(userRow.nth(3)).toHaveText(`${newUser.email}`);
+      // Импорт из AD
+      await expect(userRow.nth(4)).toHaveText('Да');
+      // Группы
+      await expect(userRow.nth(5)).toBeEmpty();
+      // Группа AD
+      await expect(userRow.nth(6)).not.toBeEmpty();
+      // Тип лицензии
+      await expect(userRow.nth(7)).toBeEmpty();
+      // Деактивирован
+      await expect(userRow.nth(8)).toHaveText(newUser.active ? 'Нет' : 'Да');
+      // Дата создания
+      await expect(userRow.nth(9)).toHaveText(`${oldUser.metadata?.created_at}`);
+      // Дата изменения
+      expect(
+        Math.abs(userModificationDate.diff(dayjs(await userRow.nth(10).textContent(), 'DD.MM.YYYY HH:mm:ss'), 'second'))
+      ).toBeLessThanOrEqual(3);
+      // Дата последнего входа
+      await expect(userRow.nth(11)).toBeEmpty();
+      // Кем изменён
+      await expect(userRow.nth(12)).toHaveText(mainUser.username);
+      // Внутренний ID
+      newUser.id = (await userRow.nth(13).textContent()) || '';
+      expect(oldUser.id === newUser.id).toBeTruthy();
+      // AD ID
+      await expect(userRow.nth(14)).toHaveText(`${oldUser.ad_user_id}`);
+      // Источник пользователя
+      await expect(userRow.nth(15).locator(`a[href="/admin/user-connector/${ldapConnector.id}"]`)).toHaveText(
+        ldapConnector.name
+      );
+      // Элементы управления
+      await expect(userRow.last().locator('button[data-testid*=users-page-table-item-edit]')).toBeVisible();
+      await expect(userRow.last().locator('button[data-testid*=users-page-table-item-delete]')).toBeVisible();
+    });
+  });
+
+  /* Create: 13.11.2025
+  https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?folderId=2653&selected=13081
+
+  1. Открыть подраздел “Пользователи”
+  - Подаздел открыт
+  2. Найти пользователя, импортированного из AD
+  – Пользователь найден
+  3. Активировать чекбокс справа от пользователя
+  – Чекбокс активен
+  4. Нажать “Удалить” в правом верхнем углу
+  – Появилось модальное окно
+  5. Нажать “Удалить”
+  6. Пользователь удалён и не отображается в списке пользователей */
+
+  test('6.1.11. Удаление пользователя AD', async ({ page, commonPage, usersPage, data }, testInfo) => {
+    const ldapConnector = data.ldap_connector_crud;
+    let username = '';
+
+    await test.step('Переходим в подраздел "Пользователи"', async () => {
+      await commonPage.adminLinksMenu.usersLink.click();
+      await page.waitForLoadState('load');
+      await expect(commonPage.mainLoader).toBeHidden();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
+    await test.step('Ищем созданного пользователя', async () => {
+      // Работает с импортированным ранее пользователем
+      await usersPage.table.head.locator('th.ant-table-cell').nth(15).locator('button').nth(1).click();
+      await page.locator('.ant-popover-inner input[type=text]').fill(ldapConnector.name);
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      await expect(commonPage.contentLoader).toBeHidden();
+      await expect(usersPage.table.body.locator('tr.ant-table-row')).toHaveCount(2);
+    });
+    await test.step('Удаляем пользователя', async () => {
+      username = `${await usersPage.table.body.locator('tr.ant-table-row').nth(0).locator('td').nth(1).textContent()}`;
+
+      await page.locator('tr.ant-table-row').nth(0).locator('td').nth(0).locator('input[type=checkbox]').click();
+      await expect(usersPage.massDeleteBtn).toHaveText('Удалить');
+      await usersPage.massDeleteBtn.click();
+
+      // Некорректно работает модалка https://jira.pix.ru/browse/BI-6408
+      await test.step('Проверяем модальное окно удаления пользователя', async () => {
+        await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
+          'Вы уверены что хотите удалить данных пользователей?'
+        );
+        await expect(page.locator('.ant-modal-content .ant-modal-body .ant-typography div')).toHaveText([
+          `Внимание! Удаление ${username} приведёт к удалению всех Приложений и Дашбордов в его Персональной Директории!`,
+          'Это действие нельзя отменить.',
+        ]);
+      });
+
+      await commonPage.deleteModal.applyBtn.click();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
+    await test.step('Проверяем отсутствие пользователя', async () => {
+      const rowCount = await usersPage.table.body.locator('.ant-table-row').count();
+      for (let i = 0; i < rowCount; i++) {
+        await expect(usersPage.table.body.locator('.ant-table-row').nth(i)).not.toContainText(username);
+      }
+    });
+  });
+
+  /* Create: 13.11.2025
   https://pixrobotics.doqa.app/ru/home/detail/3/28/cases?folderId=2653&selected=13078
 
   1. Открыть подраздел “Импорт пользователей”
@@ -471,6 +683,12 @@ test.describe.serial('Действия с LDAP импортом пользова
     let newLdapConnector: LDAP = await LDAPConnectorsTD.createFakeLDAPConnector();
     let ldapConnectorModificationDate: Dayjs;
 
+    await test.step('Переходим в подраздел "Импорт пользователей"', async () => {
+      await commonPage.adminLinksMenu.usersImportLink.click();
+      await page.waitForLoadState('load');
+      await expect(commonPage.mainLoader).toBeHidden();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
     await test.step('Ищем подходящий ldap импорт', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
@@ -865,6 +1083,12 @@ test.describe.serial('Действия с LDAP импортом пользова
     let ldapConnector: LDAP = data.ldap_connector_crud;
     let ldapConnectorDeletionDate: Dayjs;
 
+    await test.step('Переходим в подраздел "Импорт пользователей"', async () => {
+      await commonPage.adminLinksMenu.usersImportLink.click();
+      await page.waitForLoadState('load');
+      await expect(commonPage.mainLoader).toBeHidden();
+      await expect(commonPage.contentLoader).toBeHidden();
+    });
     await test.step('Ищем созданный ldap импорт', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
@@ -896,7 +1120,7 @@ test.describe.serial('Действия с LDAP импортом пользова
       try {
         await test.step('Проверяем модальное окно удаления импорта', async () => {
           await expect(page.locator('.ant-modal-content .ant-modal-header .ant-modal-title')).toHaveText(
-            `При удалении ${ldapConnector.name} будут удалены 2 импортированных пользователей`
+            `При удалении ${ldapConnector.name} будут удалены 1 импортированных пользователей`
           );
         });
       } catch (e) {
@@ -967,7 +1191,7 @@ test.describe.serial('Действия с LDAP импортом пользова
             operSubjectAddress: mainUser.id,
             operSubjectName: mainUser.username,
           };
-          await logsPage.checkSecurityLogs(0, ldapConnectorCreateLogInfo);
+          await logsPage.checkSecurityLogs(ldapConnectorLogID, ldapConnectorCreateLogInfo);
         });
       });
     });

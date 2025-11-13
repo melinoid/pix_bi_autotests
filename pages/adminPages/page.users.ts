@@ -7,6 +7,7 @@ export default class UsersPage {
 
   readonly pageTitle: Locator;
   readonly createUserBtn: Locator;
+  readonly massDeleteBtn: Locator;
   readonly table: Components.Table;
 
   readonly newUserPage: {
@@ -55,6 +56,7 @@ export default class UsersPage {
 
     this.pageTitle = page.locator(':above(.ant-table-wrapper) h2');
     this.createUserBtn = page.locator(':above(.ant-table-container):right-of([aria-label=setting])button').first();
+    this.massDeleteBtn = page.locator(':above(.ant-table-container):right-of([aria-label=setting])button').last();
     this.table = {
       head: page.locator('.ant-table-thead tr'),
       body: page.locator('.ant-table-body'),
