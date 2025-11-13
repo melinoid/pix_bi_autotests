@@ -630,6 +630,7 @@ test.describe.serial('Действия с LDAP импортом пользова
 
       await commonPage.deleteModal.applyBtn.click();
       await expect(commonPage.contentLoader).toBeHidden();
+      await page.waitForTimeout(1000);
     });
     await test.step('Проверяем отсутствие пользователя', async () => {
       const rowCount = await usersPage.table.body.locator('.ant-table-row').count();
@@ -775,6 +776,11 @@ test.describe.serial('Действия с LDAP импортом пользова
       }
       if (newLdapConnector.periodic_update?.enabled) {
         await usersImportPage.ldapImportPage.periodicUpdateForm.timeZoneField.input.click();
+        // Список таймзон с виртуализацией, поиска нет, поэтому ставим третью отображаемую таймзону
+        newLdapConnector.periodic_update.timezone = `${await usersImportPage.ldapImportPage.periodicUpdateForm.timeZoneField.dropdown
+          .locator(':text-is("")')
+          .nth(2)
+          .textContent()}`;
         await usersImportPage.ldapImportPage.periodicUpdateForm.timeZoneField.dropdown
           .locator(`:text-is("${newLdapConnector.periodic_update.timezone}")`)
           .click();

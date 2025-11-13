@@ -19,4 +19,4 @@ services:
       - AD_HOST
       - AD_PORT
       - AD_DOMEN
-    command: /bin/sh -c 'npx playwright test --project="Smoke 1.32 Chromium"; npx playwright test --project="API Tests 32"'
+    command: /bin/sh -c 'npx playwright test --project="API Tests 32" && npx playwright test --project="Smoke 1.32 Chromium"'
