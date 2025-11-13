@@ -252,7 +252,7 @@ test.describe.serial('Действия с правилами распредел�
     const newLicenseRule = await LicenseRulesTD.createRule();
     let licenseRuleModificationDate: Dayjs;
 
-    await test.step('Ищем подходящую группу', async () => {
+    await test.step('Ищем подходящее правило распределения лицензий', async () => {
       await expect(commonPage.contentLoader).toBeHidden();
       await commonPage.searchField.openBtn.click();
       await commonPage.searchField.input.fill(oldLicenseRule.name);

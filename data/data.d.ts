@@ -25,7 +25,7 @@ export interface LDAP {
   search_base: string;
   ad_query: string;
   sync_groups?: string;
-  ldap_protocol_version: 'LDAP V2' | 'LDAP V3';
+  protocol_version: 'LDAP V2' | 'LDAP V3';
   timeout: string;
   periodic_update?: {
     enabled: boolean;

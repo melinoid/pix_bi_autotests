@@ -8,7 +8,7 @@ export default defineConfig({
   retries: 0,
   workers: process.env.WORKERS_COUNT !== undefined ? +process.env.WORKERS_COUNT : 1,
   reporter: 'list',
-  timeout: 120000,
+  timeout: 180000,
   snapshotPathTemplate: '{testDir}/screenshots/{testFilePath}/{arg}{ext}',
   use: {
     locale: 'ru-RU',

@@ -38,6 +38,6 @@ jobs:
         with:
           name: test-results
           path: |
-            ./test-results/
-            ./.temp/
+            test-results/
+            .temp/
           retention-days: 3

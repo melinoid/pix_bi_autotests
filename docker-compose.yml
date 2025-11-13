@@ -6,8 +6,8 @@ services:
       dockerfile: .tools/Dockerfile
     volumes:
       - .:/autotests
-      - ./test-results:/autotests/test-results
-      - ./.temp:/autotests/.temp
+      - test-results:/autotests/test-results
+      - .temp:/autotests/.temp
     environment:
       - WORKERS_COUNT
       - BI_URL
