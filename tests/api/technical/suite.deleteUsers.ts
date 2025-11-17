@@ -22,12 +22,27 @@ test('Clear Users', async ({ request }, testInfo) => {
   });
 
   await test.step('Delete users', async () => {
-    for (let i = +processId; i < totalCount; i += testInfo.config.workers) {
-      const user: any = users[i];
-      response = await request.post(`/api/v0/admin/users/delete`, {
-        data: { ids: [user.id] },
-      });
-      console.log(`${await response.text()} ${i + 1} из ${totalCount}`);
+    const batchSize = 50;
+
+    for (let i = +processId; i < totalCount; i += testInfo.config.workers * batchSize) {
+      const batchIds = [];
+
+      // Собираем пачку ID
+      for (let j = i; j < i + testInfo.config.workers * batchSize && j < totalCount; j += testInfo.config.workers) {
+        const user: any = users[j];
+        if (user) {
+          batchIds.push(user.id);
+        }
+      }
+
+      if (batchIds.length > 0) {
+        response = await request.post(`/api/v0/admin/users/delete`, {
+          data: { ids: batchIds },
+        });
+        console.log(
+          `Удалено ${batchIds.length} пользователей: ${i + 1}-${Math.min(i + batchIds.length, totalCount)} из ${totalCount}`
+        );
+      }
     }
   });
 });

@@ -2,18 +2,12 @@ import { APIResponse } from '@playwright/test';
 import test from '@playwright/test';
 
 let response: APIResponse;
-const path = '/api/v0/applications';
+const path = '/api/v0/applications-tree';
 
 test(`Проверка GET ${path}`, async ({ request }) => {
   await test.step('200', async () => {
     response = await request.get(path, {
       headers: { authorization: process.env.BI_TOKEN || '' },
-      params: {
-        directoryId: 1,
-        searchText: '',
-        sortBy: '',
-        sortDirection: 'ASC',
-      },
     });
 
     const status = response.status();
@@ -25,12 +19,6 @@ test(`Проверка GET ${path}`, async ({ request }) => {
   await test.step('200 с невалидным заголовком', async () => {
     response = await request.get(path, {
       headers: { authorization: process.env.BI_TOKEN || '', broken: '123' },
-      params: {
-         directoryId: 1,
-        searchText: '',
-        sortBy: '',
-        sortDirection: 'ASC',
-      },
     });
 
     const status = response.status();
@@ -43,11 +31,7 @@ test(`Проверка GET ${path}`, async ({ request }) => {
     response = await request.get(path, {
       headers: { authorization: process.env.BI_TOKEN || '' },
       params: {
-        directoryId: 1,
-        searchText: '',
-        sortBy: '',
-        sortDirection: 'ASC',
-        broken: '123'
+        broken: '123',
       },
     });
 
